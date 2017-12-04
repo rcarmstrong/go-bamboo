@@ -18,7 +18,7 @@ type PlanCreateBranchOptions struct {
 func (p *PlanService) CreatePlanBranch(projectKey, buildKey, branchName string, opt *PlanCreateBranchOptions) (*http.Response, error) {
 	var u string
 	if !emptyStrings(projectKey, buildKey, branchName) {
-		u = fmt.Sprintf("plan/%s-%s/branch/%s", projectKey, buildKey, branchName)
+		u = fmt.Sprintf("plan/%s-%s/branch/%s.json", projectKey, buildKey, branchName)
 		if opt != nil && opt.VCSBranch != "" {
 			u += fmt.Sprintf("?vcsBranch=%s", opt.VCSBranch)
 		}
