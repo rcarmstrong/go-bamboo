@@ -96,7 +96,7 @@ func (p *PlanService) NumberOfPlans() (int, error) {
 }
 
 // ListPlans gets information on all plans
-func (p *PlanService) ListPlans() ([]Plan, error) {
+func (p *PlanService) ListPlans() (*Plans, error) {
 
 	numPlans, err := p.NumberOfPlans()
 	if err != nil {
@@ -121,5 +121,19 @@ func (p *PlanService) ListPlans() ([]Plan, error) {
 		return nil, &simpleError{fmt.Sprintf("Getting plan information returned %s", resp.Status)}
 	}
 
-	return planInfo.Response.List, nil
+	return &planInfo.Response, nil
+}
+
+// ListPlanKeys get all the plan keys for all build plans on Bamboo
+func (p *PlanService) ListPlanKeys() ([]string, error) {
+	plans, err := p.ListPlans()
+	if err != nil {
+		return nil, err
+	}
+	keys := make([]string, plans.Size)
+
+	for _, p := range plans.List {
+		keys = append(keys, p.PK.Key)
+	}
+	return keys, nil
 }
