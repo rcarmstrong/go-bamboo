@@ -9,19 +9,22 @@ type ProjectService service
 
 // ProjectResponse the REST response from the server
 type ProjectResponse struct {
-	Response Projects `json:"projects"`
+	ServiceMetadata
+	Projects Projects `json:"projects"`
 }
 
 // Projects is a collection of project elements
 type Projects struct {
+	CollectionMetadata
 	ProjectList []Project `json:"project"`
 }
 
 // Project is a single project definition
 type Project struct {
-	Key         string `json:"key,omitempty"`
-	Name        string `json:"name,omitempty"`
-	Description string `json:"description,omitempty"`
+	Key         string      `json:"key,omitempty"`
+	Name        string      `json:"name,omitempty"`
+	Description string      `json:"description,omitempty"`
+	Link        ServiceLink `json:"link,omitempty"`
 }
 
 // ProjectInformation is the information for a single project
@@ -81,5 +84,5 @@ func (p *ProjectService) ListProjects() ([]Project, error) {
 		return nil, &simpleError{fmt.Sprintf("List projects returned %s", resp.Status)}
 	}
 
-	return projectResp.Response.ProjectList, nil
+	return projectResp.Projects.ProjectList, nil
 }
