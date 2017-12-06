@@ -14,31 +14,33 @@ type PlanCreateBranchOptions struct {
 	VCSBranch string
 }
 
-// PlanResponce encapsultes a response from the REST API
-type PlanResponce struct {
-	Response Plans `json:"plans"`
+// PlanResponse encapsultes a response from the plan service
+type PlanResponse struct {
+	ServiceMetadata
+	Plans Plans `json:"plans"`
 }
 
 // Plans is a collection of Plan objects
 type Plans struct {
-	Size int    `json:"size"`
-	List []Plan `json:"plan"`
+	CollectionMetadata
+	PlanList []Plan `json:"plan"`
 }
 
 // Plan is the definition of a single plan
 type Plan struct {
-	ShortName string  `json:"shortName"`
-	ShortKey  string  `json:"shortKey"`
-	Type      string  `json:"type"`
-	Enabled   bool    `json:"enabled"`
-	Key       string  `json:"key"`
-	Name      string  `json:"name"`
-	PK        PlanKey `json:"planKey"`
+	ShortName string      `json:"shortName,omitempty"`
+	ShortKey  string      `json:"shortKey,omitempty"`
+	Type      string      `json:"type,omitempty"`
+	Enabled   bool        `json:"enabled,omitempty"`
+	Link      ServiceLink `json:"link,omitempty"`
+	Key       string      `json:"key,omitempty"`
+	Name      string      `json:"name,omitempty"`
+	PlanKey   PlanKey     `json:"planKey,omitempty"`
 }
 
 // PlanKey holds the plan-key for a plan
 type PlanKey struct {
-	Key string `json:"key"`
+	Key string `json:"key,omitempty"`
 }
 
 // CreatePlanBranch will create a plan branch with the given branch name for the specified build
@@ -81,8 +83,8 @@ func (p *PlanService) NumberOfPlans() (int, error) {
 		return 0, err
 	}
 
-	planInfo := PlanResponce{}
-	resp, err := p.client.Do(req, &planInfo)
+	planResp := PlanResponse{}
+	resp, err := p.client.Do(req, &planResp)
 	if err != nil {
 		return 0, err
 	}
@@ -92,7 +94,7 @@ func (p *PlanService) NumberOfPlans() (int, error) {
 		return 0, &simpleError{fmt.Sprintf("Getting the number of plans returned %s", resp.Status)}
 	}
 
-	return planInfo.Response.Size, nil
+	return planResp.Plans.Size, nil
 }
 
 // ListPlans gets information on all plans
@@ -110,8 +112,8 @@ func (p *PlanService) ListPlans() (*Plans, error) {
 		return nil, err
 	}
 
-	planInfo := PlanResponce{}
-	resp, err := p.client.Do(req, &planInfo)
+	planResp := PlanResponse{}
+	resp, err := p.client.Do(req, &planResp)
 	if err != nil {
 		return nil, err
 	}
@@ -121,7 +123,7 @@ func (p *PlanService) ListPlans() (*Plans, error) {
 		return nil, &simpleError{fmt.Sprintf("Getting plan information returned %s", resp.Status)}
 	}
 
-	return &planInfo.Response, nil
+	return &planResp.Plans, nil
 }
 
 // ListPlanKeys get all the plan keys for all build plans on Bamboo
@@ -132,8 +134,8 @@ func (p *PlanService) ListPlanKeys() ([]string, error) {
 	}
 	keys := make([]string, plans.Size)
 
-	for _, p := range plans.List {
-		keys = append(keys, p.PK.Key)
+	for _, p := range plans.PlanList {
+		keys = append(keys, p.PlanKey.Key)
 	}
 	return keys, nil
 }

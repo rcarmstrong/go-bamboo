@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	libraryVersion = "1"
+	libraryVersion = "1.0"
 	defaultBaseURL = "http://localhost:8085/rest/api/latest/"
 )
 
@@ -26,6 +26,34 @@ type Client struct {
 	// Services used for talking to different parts of the Bamboo API
 	Plans    *PlanService
 	Projects *ProjectService
+}
+
+// ServiceMetadata holds metadata about the API service response
+// - Expand: Element of the expand parameter used for the service
+// - Link: See ServiceLink
+type ServiceMetadata struct {
+	Expand string      `json:"expand"`
+	Link   ServiceLink `json:"link"`
+}
+
+// ServiceLink holds link information for the service
+// - HREF: Relationship between link and element (defaults to "self")
+// - Rel:  URL for the project
+type ServiceLink struct {
+	HREF string `json:"href"`
+	Rel  string `json:"rel"`
+}
+
+// CollectionMetadata holds metadata about a collection of Bamboo resources
+// - Size:       Number of resources
+// - Expand:     Element of the expand parameter used for the collection
+// - StartIndex: Index from which to the request started gathering resources
+// - MaxResult:  The maximum number of returned resources for the request
+type CollectionMetadata struct {
+	Size       int    `json:"size"`
+	Expand     string `json:"expand"`
+	StartIndex int    `json:"start-index"`
+	MaxResult  int    `json:"max-result"`
 }
 
 type service struct {
