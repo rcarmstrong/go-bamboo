@@ -24,6 +24,7 @@ type Client struct {
 	common service // Reuse a single struct instead of allocating one for each service on the heap.
 
 	// Services used for talking to different parts of the Bamboo API
+	Server   *InfoService
 	Plans    *PlanService
 	Projects *ProjectService
 }
@@ -92,6 +93,7 @@ func NewSimpleClient(httpClient *http.Client, username, password string) *Client
 	c.common.client = c
 	c.Plans = (*PlanService)(&c.common)
 	c.Projects = (*ProjectService)(&c.common)
+	c.Server = (*InfoService)(&c.common)
 	return c
 }
 
