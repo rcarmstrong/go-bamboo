@@ -2,7 +2,6 @@ package bamboo
 
 import (
 	"fmt"
-	"net/http"
 )
 
 // PlanService handles communication with the plan related methods
@@ -44,44 +43,45 @@ type PlanKey struct {
 }
 
 // CreatePlanBranch will create a plan branch with the given branch name for the specified build
-func (p *PlanService) CreatePlanBranch(projectKey, buildKey, branchName string, opt *PlanCreateBranchOptions) (*http.Response, error) {
+func (p *PlanService) CreatePlanBranch(projectKey, buildKey, branchName string, opt *PlanCreateBranchOptions) (bool, error) {
 	var u string
 	if !emptyStrings(projectKey, buildKey, branchName) {
 		u = fmt.Sprintf("plan/%s-%s/branch/%s.json", projectKey, buildKey, branchName)
-		if opt != nil && opt.VCSBranch != "" {
-			u += fmt.Sprintf("?vcsBranch=%s", opt.VCSBranch)
-		}
 	} else {
-		return nil, &simpleError{"Project key, build key, and branch name cannot be empty"}
+		return false, &simpleError{"Project key, build key, and branch name cannot be empty"}
 	}
 
 	req, err := p.client.NewRequest("PUT", u, nil)
 	if err != nil {
-		return nil, err
+		return false, err
+	}
+
+	if opt != nil && opt.VCSBranch != "" {
+		req.URL.Query().Add("vcsBranch", opt.VCSBranch)
 	}
 
 	resp, err := p.client.Do(req, nil)
 	if err != nil {
-		return resp, err
+		return false, err
 	}
 	defer resp.Body.Close()
 
 	if !(resp.StatusCode == 200) {
-		return resp, &simpleError{fmt.Sprintf("Create returned %d", resp.StatusCode)}
+		return false, &simpleError{fmt.Sprintf("Create returned %d", resp.StatusCode)}
 	}
 
-	return resp, nil
+	return true, nil
 }
 
 // NumberOfPlans returns the number of plans on the Bamboo server
 func (p *PlanService) NumberOfPlans() (int, error) {
-	// Restrict results to one for speed
-	u := "plan.json?max-results=1"
-
-	req, err := p.client.NewRequest("GET", u, nil)
+	req, err := p.client.NewRequest("GET", "plan.json", nil)
 	if err != nil {
 		return 0, err
 	}
+
+	// Restrict results to one for speed
+	req.URL.Query().Add("max-results", "1")
 
 	planResp := PlanResponse{}
 	resp, err := p.client.Do(req, &planResp)
@@ -99,18 +99,17 @@ func (p *PlanService) NumberOfPlans() (int, error) {
 
 // ListPlans gets information on all plans
 func (p *PlanService) ListPlans() (*Plans, error) {
-
 	numPlans, err := p.NumberOfPlans()
 	if err != nil {
 		return nil, err
 	}
 
-	u := fmt.Sprintf("plan.json?max-results=%d", numPlans)
-
-	req, err := p.client.NewRequest("GET", u, nil)
+	req, err := p.client.NewRequest("GET", "plan.json", nil)
 	if err != nil {
 		return nil, err
 	}
+
+	req.URL.Query().Add("max-results", string(numPlans))
 
 	planResp := PlanResponse{}
 	resp, err := p.client.Do(req, &planResp)
