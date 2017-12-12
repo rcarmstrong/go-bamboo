@@ -10,6 +10,6 @@ fi
 
 docker inspect local-bamboo > /dev/null 2>&1
 if [ $? == 1 ];then
-  docker run -d -p 8085:8085 -v ${PWD}/data/bamboo:/var/atlassian/bamboo --name local-bamboo cptactionhank/atlassian-bamboo 
+  docker run -d -p 8085:8085 -v gobamboo:/var/atlassian/bamboo --name local-bamboo cptactionhank/atlassian-bamboo 
   echo "Be sure to set up Bamboo at http://localhost:8085/"
 fi
