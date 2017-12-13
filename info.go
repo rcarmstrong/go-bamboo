@@ -1,6 +1,9 @@
 package bamboo
 
-import "fmt"
+import (
+	"fmt"
+	"net/http"
+)
 
 // InfoService retrieves general server information
 type InfoService service
@@ -16,23 +19,22 @@ type ServerInfo struct {
 }
 
 // Info fetches the server information for the Bamboo server
-func (i *InfoService) Info() (*ServerInfo, error) {
+func (i *InfoService) Info() (*ServerInfo, *http.Response, error) {
 	u := "info.json"
-	req, err := i.client.NewRequest("GET", u, nil)
+	request, err := i.client.NewRequest("GET", u, nil)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	serverInfo := &ServerInfo{}
-	resp, err := i.client.Do(req, serverInfo)
+	response, err := i.client.Do(request, serverInfo)
 	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if !(resp.StatusCode == 200) {
-		return nil, &simpleError{fmt.Sprintf("Request for server info returned %d", resp.StatusCode)}
+		return nil, response, err
 	}
 
-	return serverInfo, nil
+	if !(response.StatusCode == 200) {
+		return nil, response, &simpleError{fmt.Sprintf("Request for server info returned %d", response.StatusCode)}
+	}
+
+	return serverInfo, response, nil
 }
