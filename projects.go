@@ -2,6 +2,7 @@ package bamboo
 
 import (
 	"fmt"
+	"net/http"
 )
 
 // ProjectService handles communication with the project related methods
@@ -16,23 +17,23 @@ type ProjectResponse struct {
 // Projects is a collection of project elements
 type Projects struct {
 	CollectionMetadata
-	ProjectList []Project `json:"project"`
+	ProjectList []*Project `json:"project"`
 }
 
 // Project is a single project definition
 type Project struct {
-	Key         string      `json:"key,omitempty"`
-	Name        string      `json:"name,omitempty"`
-	Description string      `json:"description,omitempty"`
-	Link        ServiceLink `json:"link,omitempty"`
+	Key         string       `json:"key,omitempty"`
+	Name        string       `json:"name,omitempty"`
+	Description string       `json:"description,omitempty"`
+	Link        *ServiceLink `json:"link,omitempty"`
 }
 
 // ProjectInformation is the information for a single project
 type ProjectInformation struct {
-	Key         string                  `json:"key,omitempty"`
-	Name        string                  `json:"name,omitempty"`
-	Description string                  `json:"description,omitempty"`
-	NumPlans    ProjectPlansInformation `json:"plans"`
+	Key         string                   `json:"key,omitempty"`
+	Name        string                   `json:"name,omitempty"`
+	Description string                   `json:"description,omitempty"`
+	NumPlans    *ProjectPlansInformation `json:"plans"`
 }
 
 // ProjectPlansInformation holds the number of plans in a project
@@ -41,48 +42,46 @@ type ProjectPlansInformation struct {
 }
 
 // ProjectInfo get the information on the specific project
-func (p *ProjectService) ProjectInfo(projectKey string) (*ProjectInformation, error) {
+func (p *ProjectService) ProjectInfo(projectKey string) (*ProjectInformation, *http.Response, error) {
 	var u string
 	if !emptyStrings(projectKey) {
 		u = fmt.Sprintf("project/%s.json", projectKey)
 	} else {
-		return nil, &simpleError{fmt.Sprintf("Project key cannot be an empty string")}
+		return nil, nil, &simpleError{fmt.Sprintf("Project key cannot be an empty string")}
 	}
 
-	req, err := p.client.NewRequest("GET", u, nil)
+	request, err := p.client.NewRequest("GET", u, nil)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	projectInfo := ProjectInformation{}
-	resp, err := p.client.Do(req, &projectInfo)
+	response, err := p.client.Do(request, &projectInfo)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	defer resp.Body.Close()
 
-	return &projectInfo, nil
+	return &projectInfo, response, nil
 }
 
 // ListProjects lists all projects
-func (p *ProjectService) ListProjects() ([]Project, error) {
+func (p *ProjectService) ListProjects() ([]*Project, *http.Response, error) {
 	u := "project.json"
 
-	req, err := p.client.NewRequest("GET", u, nil)
+	request, err := p.client.NewRequest("GET", u, nil)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	projectResp := ProjectResponse{}
-	resp, err := p.client.Do(req, &projectResp)
+	response, err := p.client.Do(request, &projectResp)
 	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if !(resp.StatusCode == 200) {
-		return nil, &simpleError{fmt.Sprintf("List projects returned %s", resp.Status)}
+		return nil, nil, err
 	}
 
-	return projectResp.Projects.ProjectList, nil
+	if !(response.StatusCode == 200) {
+		return nil, response, &simpleError{fmt.Sprintf("List projects returned %s", response.Status)}
+	}
+
+	return projectResp.Projects.ProjectList, response, nil
 }
