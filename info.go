@@ -18,6 +18,10 @@ type ServerInfo struct {
 	State       string `json:"state,omitempty"`
 }
 
+func (s *ServerInfo) isRunning() bool {
+	return s.State == "RUNNING"
+}
+
 // Info fetches the server information for the Bamboo server
 func (i *InfoService) Info() (*ServerInfo, *http.Response, error) {
 	u := "info.json"
