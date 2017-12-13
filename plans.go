@@ -2,6 +2,7 @@ package bamboo
 
 import (
 	"fmt"
+	"net/http"
 )
 
 // PlanService handles communication with the plan related methods
@@ -16,25 +17,25 @@ type PlanCreateBranchOptions struct {
 // PlanResponse encapsultes a response from the plan service
 type PlanResponse struct {
 	ServiceMetadata
-	Plans Plans `json:"plans"`
+	Plans *Plans `json:"plans"`
 }
 
 // Plans is a collection of Plan objects
 type Plans struct {
 	CollectionMetadata
-	PlanList []Plan `json:"plan"`
+	PlanList []*Plan `json:"plan"`
 }
 
 // Plan is the definition of a single plan
 type Plan struct {
-	ShortName string      `json:"shortName,omitempty"`
-	ShortKey  string      `json:"shortKey,omitempty"`
-	Type      string      `json:"type,omitempty"`
-	Enabled   bool        `json:"enabled,omitempty"`
-	Link      ServiceLink `json:"link,omitempty"`
-	Key       string      `json:"key,omitempty"`
-	Name      string      `json:"name,omitempty"`
-	PlanKey   PlanKey     `json:"planKey,omitempty"`
+	ShortName string       `json:"shortName,omitempty"`
+	ShortKey  string       `json:"shortKey,omitempty"`
+	Type      string       `json:"type,omitempty"`
+	Enabled   bool         `json:"enabled,omitempty"`
+	Link      *ServiceLink `json:"link,omitempty"`
+	Key       string       `json:"key,omitempty"`
+	Name      string       `json:"name,omitempty"`
+	PlanKey   *PlanKey     `json:"planKey,omitempty"`
 }
 
 // PlanKey holds the plan-key for a plan
@@ -43,98 +44,95 @@ type PlanKey struct {
 }
 
 // CreatePlanBranch will create a plan branch with the given branch name for the specified build
-func (p *PlanService) CreatePlanBranch(projectKey, buildKey, branchName string, opt *PlanCreateBranchOptions) (bool, error) {
+func (p *PlanService) CreatePlanBranch(projectKey, buildKey, branchName string, options *PlanCreateBranchOptions) (bool, *http.Response, error) {
 	var u string
 	if !emptyStrings(projectKey, buildKey, branchName) {
 		u = fmt.Sprintf("plan/%s-%s/branch/%s.json", projectKey, buildKey, branchName)
 	} else {
-		return false, &simpleError{"Project key, build key, and branch name cannot be empty"}
+		return false, nil, &simpleError{"Project key, build key, and branch name cannot be empty"}
 	}
 
-	req, err := p.client.NewRequest("PUT", u, nil)
+	request, err := p.client.NewRequest("PUT", u, nil)
 	if err != nil {
-		return false, err
+		return false, nil, err
 	}
 
-	if opt != nil && opt.VCSBranch != "" {
-		req.URL.Query().Add("vcsBranch", opt.VCSBranch)
+	if options != nil && options.VCSBranch != "" {
+		request.URL.Query().Add("vcsBranch", options.VCSBranch)
 	}
 
-	resp, err := p.client.Do(req, nil)
+	response, err := p.client.Do(request, nil)
 	if err != nil {
-		return false, err
-	}
-	defer resp.Body.Close()
-
-	if !(resp.StatusCode == 200) {
-		return false, &simpleError{fmt.Sprintf("Create returned %d", resp.StatusCode)}
+		return false, response, err
 	}
 
-	return true, nil
+	if !(response.StatusCode == 200) {
+		return false, response, &simpleError{fmt.Sprintf("Create returned %d", response.StatusCode)}
+	}
+
+	return false, response, nil
 }
 
 // NumberOfPlans returns the number of plans on the Bamboo server
-func (p *PlanService) NumberOfPlans() (int, error) {
-	req, err := p.client.NewRequest("GET", "plan.json", nil)
+func (p *PlanService) NumberOfPlans() (int, *http.Response, error) {
+	request, err := p.client.NewRequest("GET", "plan.json", nil)
 	if err != nil {
-		return 0, err
+		return 0, nil, err
 	}
 
 	// Restrict results to one for speed
-	req.URL.Query().Add("max-results", "1")
+	request.URL.Query().Add("max-results", "1")
 
 	planResp := PlanResponse{}
-	resp, err := p.client.Do(req, &planResp)
+	response, err := p.client.Do(request, &planResp)
 	if err != nil {
-		return 0, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != 200 {
-		return 0, &simpleError{fmt.Sprintf("Getting the number of plans returned %s", resp.Status)}
+		return 0, response, err
 	}
 
-	return planResp.Plans.Size, nil
+	if response.StatusCode != 200 {
+		return 0, response, &simpleError{fmt.Sprintf("Getting the number of plans returned %s", response.Status)}
+	}
+
+	return planResp.Plans.Size, response, nil
 }
 
 // ListPlans gets information on all plans
-func (p *PlanService) ListPlans() (*Plans, error) {
-	numPlans, err := p.NumberOfPlans()
+func (p *PlanService) ListPlans() (*Plans, *http.Response, error) {
+	numPlans, resp, err := p.NumberOfPlans()
 	if err != nil {
-		return nil, err
+		return nil, resp, err
 	}
 
-	req, err := p.client.NewRequest("GET", "plan.json", nil)
+	request, err := p.client.NewRequest("GET", "plan.json", nil)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	req.URL.Query().Add("max-results", string(numPlans))
+	request.URL.Query().Add("max-results", string(numPlans))
 
 	planResp := PlanResponse{}
-	resp, err := p.client.Do(req, &planResp)
+	response, err := p.client.Do(request, &planResp)
 	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != 200 {
-		return nil, &simpleError{fmt.Sprintf("Getting plan information returned %s", resp.Status)}
+		return nil, response, err
 	}
 
-	return &planResp.Plans, nil
+	if response.StatusCode != 200 {
+		return nil, response, &simpleError{fmt.Sprintf("Getting plan information returned %s", response.Status)}
+	}
+
+	return planResp.Plans, response, nil
 }
 
 // ListPlanKeys get all the plan keys for all build plans on Bamboo
-func (p *PlanService) ListPlanKeys() ([]string, error) {
-	plans, err := p.ListPlans()
+func (p *PlanService) ListPlanKeys() ([]string, *http.Response, error) {
+	plans, response, err := p.ListPlans()
 	if err != nil {
-		return nil, err
+		return nil, response, err
 	}
 	keys := make([]string, plans.Size)
 
 	for _, p := range plans.PlanList {
 		keys = append(keys, p.PlanKey.Key)
 	}
-	return keys, nil
+	return keys, response, nil
 }
