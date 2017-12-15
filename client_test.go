@@ -1,6 +1,7 @@
 package bamboo_test
 
 import (
+	"net/http"
 	"os"
 	"testing"
 
@@ -54,7 +55,33 @@ func TestSetURL(t *testing.T) {
 }
 
 func TestNewSimpleClient(t *testing.T) {
+	testClient := bamboo.NewSimpleClient(nil, "myusername", "mypassword")
+	compareClient := struct {
+		client      *http.Client
+		baseURL     string
+		simpleCreds *bamboo.SimpleCredentials
+	}{
+		client:  http.DefaultClient,
+		baseURL: "http://localhost:8085/rest/api/latest/",
+		simpleCreds: &bamboo.SimpleCredentials{
+			Username: "myusername",
+			Password: "mypassword",
+		},
+	}
 
+	if compareClient.baseURL != testClient.BaseURL.String() {
+		t.Errorf("Expected client BaseURL to be %s but got %s", compareClient.baseURL, testClient.BaseURL.String())
+	}
+
+	if compareClient.simpleCreds.Username != testClient.SimpleCreds.Username {
+		t.Errorf("Expected client Username to be %s but got %s", compareClient.simpleCreds.Username, testClient.SimpleCreds.Username)
+	}
+
+	if compareClient.simpleCreds.Password != testClient.SimpleCreds.Password {
+		t.Errorf("Expected client Username to be %s but got %s", compareClient.simpleCreds.Password, testClient.SimpleCreds.Password)
+	}
+
+	//TODO compair http.Clients
 }
 
 func TestNewRequest(t *testing.T) {
