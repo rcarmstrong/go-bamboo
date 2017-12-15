@@ -10,13 +10,13 @@ type ProjectService service
 
 // ProjectResponse the REST response from the server
 type ProjectResponse struct {
-	ServiceMetadata
-	Projects Projects `json:"projects"`
+	*ServiceMetadata
+	Projects *Projects `json:"projects"`
 }
 
 // Projects is a collection of project elements
 type Projects struct {
-	CollectionMetadata
+	*CollectionMetadata
 	ProjectList []*Project `json:"project"`
 }
 

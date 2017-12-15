@@ -16,13 +16,13 @@ type PlanCreateBranchOptions struct {
 
 // PlanResponse encapsultes a response from the plan service
 type PlanResponse struct {
-	ServiceMetadata
+	*ServiceMetadata
 	Plans *Plans `json:"plans"`
 }
 
 // Plans is a collection of Plan objects
 type Plans struct {
-	CollectionMetadata
+	*CollectionMetadata
 	PlanList []*Plan `json:"plan"`
 }
 
@@ -97,7 +97,7 @@ func (p *PlanService) NumberOfPlans() (int, *http.Response, error) {
 }
 
 // ListPlans gets information on all plans
-func (p *PlanService) ListPlans() (*Plans, *http.Response, error) {
+func (p *PlanService) ListPlans() ([]*Plan, *http.Response, error) {
 	numPlans, resp, err := p.NumberOfPlans()
 	if err != nil {
 		return nil, resp, err
@@ -120,7 +120,7 @@ func (p *PlanService) ListPlans() (*Plans, *http.Response, error) {
 		return nil, response, &simpleError{fmt.Sprintf("Getting plan information returned %s", response.Status)}
 	}
 
-	return planResp.Plans, response, nil
+	return planResp.Plans.PlanList, response, nil
 }
 
 // ListPlanKeys get all the plan keys for all build plans on Bamboo
@@ -129,10 +129,10 @@ func (p *PlanService) ListPlanKeys() ([]string, *http.Response, error) {
 	if err != nil {
 		return nil, response, err
 	}
-	keys := make([]string, plans.Size)
+	keys := make([]string, len(plans))
 
-	for _, p := range plans.PlanList {
-		keys = append(keys, p.PlanKey.Key)
+	for i, p := range plans {
+		keys[i] = p.ShortKey
 	}
 	return keys, response, nil
 }

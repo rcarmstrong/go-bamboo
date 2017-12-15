@@ -34,8 +34,8 @@ type Client struct {
 // - Expand: Element of the expand parameter used for the service
 // - Link: See ServiceLink
 type ServiceMetadata struct {
-	Expand string      `json:"expand"`
-	Link   ServiceLink `json:"link"`
+	Expand string       `json:"expand"`
+	Link   *ServiceLink `json:"link"`
 }
 
 // ServiceLink holds link information for the service
