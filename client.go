@@ -74,8 +74,13 @@ func (c *Client) SetURL(desiredURL string) error {
 	if err != nil {
 		return err
 	}
-	if !strings.HasSuffix(newURL.Path, "rest/api/latest/") {
-		newURL.Path += "rest/api/latest/"
+
+	if newURL.Scheme == "" {
+		return newErrBadURL("URL scheme was blank")
+	}
+
+	if !strings.HasSuffix(newURL.Path, "/rest/api/latest/") {
+		newURL.Path += "/rest/api/latest/"
 	}
 	c.BaseURL = newURL
 	return nil
