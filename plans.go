@@ -70,7 +70,7 @@ func (p *PlanService) CreatePlanBranch(projectKey, buildKey, branchName string, 
 		return false, response, &simpleError{fmt.Sprintf("Create returned %d", response.StatusCode)}
 	}
 
-	return false, response, nil
+	return true, response, nil
 }
 
 // NumberOfPlans returns the number of plans on the Bamboo server
