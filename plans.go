@@ -16,7 +16,7 @@ type PlanCreateBranchOptions struct {
 
 // PlanResponse encapsultes a response from the plan service
 type PlanResponse struct {
-	*ServiceMetadata
+	*ResourceMetadata
 	Plans *Plans `json:"plans"`
 }
 
@@ -28,14 +28,14 @@ type Plans struct {
 
 // Plan is the definition of a single plan
 type Plan struct {
-	ShortName string       `json:"shortName,omitempty"`
-	ShortKey  string       `json:"shortKey,omitempty"`
-	Type      string       `json:"type,omitempty"`
-	Enabled   bool         `json:"enabled,omitempty"`
-	Link      *ServiceLink `json:"link,omitempty"`
-	Key       string       `json:"key,omitempty"`
-	Name      string       `json:"name,omitempty"`
-	PlanKey   *PlanKey     `json:"planKey,omitempty"`
+	ShortName string   `json:"shortName,omitempty"`
+	ShortKey  string   `json:"shortKey,omitempty"`
+	Type      string   `json:"type,omitempty"`
+	Enabled   bool     `json:"enabled,omitempty"`
+	Link      *Link    `json:"link,omitempty"`
+	Key       string   `json:"key,omitempty"`
+	Name      string   `json:"name,omitempty"`
+	PlanKey   *PlanKey `json:"planKey,omitempty"`
 }
 
 // PlanKey holds the plan-key for a plan

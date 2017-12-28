@@ -10,7 +10,7 @@ type ProjectService service
 
 // ProjectResponse the REST response from the server
 type ProjectResponse struct {
-	*ServiceMetadata
+	*ResourceMetadata
 	Projects *Projects `json:"projects"`
 }
 
@@ -22,10 +22,10 @@ type Projects struct {
 
 // Project is a single project definition
 type Project struct {
-	Key         string       `json:"key,omitempty"`
-	Name        string       `json:"name,omitempty"`
-	Description string       `json:"description,omitempty"`
-	Link        *ServiceLink `json:"link,omitempty"`
+	Key         string `json:"key,omitempty"`
+	Name        string `json:"name,omitempty"`
+	Description string `json:"description,omitempty"`
+	Link        *Link  `json:"link,omitempty"`
 }
 
 // ProjectInformation is the information for a single project
