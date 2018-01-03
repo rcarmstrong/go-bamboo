@@ -98,6 +98,7 @@ func (p *PlanService) NumberOfPlans() (int, *http.Response, error) {
 
 // ListPlans gets information on all plans
 func (p *PlanService) ListPlans() ([]*Plan, *http.Response, error) {
+	// Get number of plans to set max-results
 	numPlans, resp, err := p.NumberOfPlans()
 	if err != nil {
 		return nil, resp, err
@@ -108,7 +109,9 @@ func (p *PlanService) ListPlans() ([]*Plan, *http.Response, error) {
 		return nil, nil, err
 	}
 
-	request.URL.Query().Add("max-results", string(numPlans))
+	q := request.URL.Query()
+	q.Set("max-results", string(numPlans))
+	request.URL.RawQuery = q.Encode()
 
 	planResp := PlanResponse{}
 	response, err := p.client.Do(request, &planResp)
