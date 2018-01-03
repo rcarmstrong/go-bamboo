@@ -44,12 +44,12 @@ type PlanKey struct {
 }
 
 // CreatePlanBranch will create a plan branch with the given branch name for the specified build
-func (p *PlanService) CreatePlanBranch(projectKey, buildKey, branchName string, options *PlanCreateBranchOptions) (bool, *http.Response, error) {
+func (p *PlanService) CreatePlanBranch(planKey, branchName string, options *PlanCreateBranchOptions) (bool, *http.Response, error) {
 	var u string
-	if !emptyStrings(projectKey, buildKey, branchName) {
-		u = fmt.Sprintf("plan/%s-%s/branch/%s.json", projectKey, buildKey, branchName)
+	if !emptyStrings(planKey, branchName) {
+		u = fmt.Sprintf("plan/%s/branch/%s.json", planKey, branchName)
 	} else {
-		return false, nil, &simpleError{"Project key, build key, and branch name cannot be empty"}
+		return false, nil, &simpleError{"Project key and/or branch name cannot be empty"}
 	}
 
 	request, err := p.client.NewRequest("PUT", u, nil)
