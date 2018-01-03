@@ -3,6 +3,7 @@ package bamboo
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 )
 
 // PlanService handles communication with the plan related methods
@@ -110,7 +111,7 @@ func (p *PlanService) ListPlans() ([]*Plan, *http.Response, error) {
 	}
 
 	q := request.URL.Query()
-	q.Set("max-results", string(numPlans))
+	q.Set("max-results", strconv.Itoa(numPlans))
 	request.URL.RawQuery = q.Encode()
 
 	planResp := PlanResponse{}
