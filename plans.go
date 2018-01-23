@@ -59,7 +59,9 @@ func (p *PlanService) CreatePlanBranch(planKey, branchName string, options *Plan
 	}
 
 	if options != nil && options.VCSBranch != "" {
-		request.URL.Query().Add("vcsBranch", options.VCSBranch)
+		values := request.URL.Query()
+		values.Add("vcsBranch", options.VCSBranch)
+		request.URL.RawQuery = values.Encode()
 	}
 
 	response, err := p.client.Do(request, nil)
@@ -82,7 +84,9 @@ func (p *PlanService) NumberOfPlans() (int, *http.Response, error) {
 	}
 
 	// Restrict results to one for speed
-	request.URL.Query().Add("max-results", "1")
+	values := request.URL.Query()
+	values.Add("max-results", "1")
+	request.URL.RawQuery = values.Encode()
 
 	planResp := PlanResponse{}
 	response, err := p.client.Do(request, &planResp)
