@@ -11,8 +11,8 @@ import (
 )
 
 var (
-	testComment   = "hello world"
-	testResultKey = "TEST-TEST-1"
+	testComment      = "hello world"
+	resultCommentKey = "TEST-TEST-1"
 )
 
 func TestAddComment(t *testing.T) {
@@ -24,7 +24,7 @@ func TestAddComment(t *testing.T) {
 
 	comment := &bamboo.Comment{
 		Content:   testComment,
-		ResultKey: testResultKey,
+		ResultKey: resultCommentKey,
 	}
 
 	success, resp, err := client.Comments.AddComment(comment)
@@ -39,7 +39,7 @@ func TestAddComment(t *testing.T) {
 
 func addCommentStub(w http.ResponseWriter, r *http.Request) {
 	comment := &bamboo.Comment{}
-	expectedURI := fmt.Sprintf("/rest/api/latest/result/%s/comment.json", testResultKey)
+	expectedURI := fmt.Sprintf("/rest/api/latest/result/%s/comment.json", resultCommentKey)
 
 	json.NewDecoder(r.Body).Decode(comment)
 
@@ -49,7 +49,7 @@ func addCommentStub(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.RequestURI != expectedURI {
-		http.Error(w, fmt.Sprintf("URI did not match expected %s", testResultKey), http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf("URI did not match expected %s", resultCommentKey), http.StatusBadRequest)
 		return
 	}
 
