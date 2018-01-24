@@ -29,6 +29,8 @@ type Client struct {
 	Plans    *PlanService
 	Branches *PlanBranchService
 	Projects *ProjectService
+	Results  *ResultService
+	Comments *CommentService
 }
 
 type service struct {
@@ -68,6 +70,8 @@ func NewSimpleClient(httpClient *http.Client, username, password string) *Client
 	c.Branches = (*PlanBranchService)(&c.common)
 	c.Projects = (*ProjectService)(&c.common)
 	c.Server = (*InfoService)(&c.common)
+	c.Results = (*ResultService)(&c.common)
+	c.Comments = (*CommentService)(&c.common)
 	return c
 }
 
