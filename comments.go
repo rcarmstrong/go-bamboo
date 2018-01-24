@@ -15,7 +15,7 @@ type Comment struct {
 }
 
 func (cm Comment) isEmpty() bool {
-	return cm.ResultKey == ""
+	return cm.ResultKey == "" || cm.Content == ""
 }
 
 // AddComment will add a comment to the given result.
