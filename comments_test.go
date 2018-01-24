@@ -11,7 +11,8 @@ import (
 )
 
 var (
-	testComment = "hello world"
+	testComment   = "hello world"
+	testResultKey = "TEST-TEST-1"
 )
 
 func TestAddComment(t *testing.T) {
@@ -21,18 +22,24 @@ func TestAddComment(t *testing.T) {
 	client := bamboo.NewSimpleClient(nil, "", "")
 	client.SetURL(ts.URL)
 
-	success, resp, err := client.Comments.AddComment("TEST-TEST-1", testComment)
+	comment := &bamboo.Comment{
+		Content:   testComment,
+		ResultKey: testResultKey,
+	}
+
+	success, resp, err := client.Comments.AddComment(comment)
 	if err != nil {
 		t.Error(err)
 	}
 
-	if success == false || resp.StatusCode != 200 {
+	if success == false || resp.StatusCode != 204 {
 		t.Error(fmt.Sprintf("Adding comment \"%s\" was unsuccessful. Returned %s", testComment, resp.Status))
 	}
 }
 
 func addCommentStub(w http.ResponseWriter, r *http.Request) {
 	comment := &bamboo.Comment{}
+	expectedURI := fmt.Sprintf("/rest/api/latest/result/%s/comment.json", testResultKey)
 
 	json.NewDecoder(r.Body).Decode(comment)
 
@@ -40,4 +47,11 @@ func addCommentStub(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "comments do not match", http.StatusBadRequest)
 		return
 	}
+
+	if r.RequestURI != expectedURI {
+		http.Error(w, fmt.Sprintf("URI did not match expected %s", testResultKey), http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }
