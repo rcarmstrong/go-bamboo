@@ -140,7 +140,7 @@ func (p *PlanService) ListPlanKeys() ([]string, *http.Response, error) {
 	keys := make([]string, len(plans))
 
 	for i, p := range plans {
-		keys[i] = p.ShortKey
+		keys[i] = p.Key
 	}
 	return keys, response, nil
 }
