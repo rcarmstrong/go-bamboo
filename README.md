@@ -40,6 +40,8 @@ bambooClient := bamboo.NewSimpleClient(nil, "myUsername", "myPassword")
 bambooClient.SetURL("https://my.bambooserver.com:8085/")
 ```
 
+You may optionally pass in your own http client, replaces the nil above, to be used as the go-bamboo http client.
+
 ## General-Information ##
 
 Returns general info about the API.
