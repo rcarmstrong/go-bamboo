@@ -144,3 +144,32 @@ func (p *PlanService) ListPlanKeys() ([]string, *http.Response, error) {
 	}
 	return keys, response, nil
 }
+
+// ListPlanNames returns a list of ShortNames of all plans
+func (p *PlanService) ListPlanNames() ([]string, *http.Response, error) {
+	plans, response, err := p.ListPlans()
+	if err != nil {
+		return nil, response, err
+	}
+	names := make([]string, len(plans))
+
+	for i, p := range plans {
+		names[i] = p.ShortName
+	}
+	return names, response, nil
+}
+
+// PlanNameMap returns a map[string]string where the PlanKey is the key and the ShortName is the value
+func (p *PlanService) PlanNameMap() (map[string]string, *http.Response, error) {
+	plans, response, err := p.ListPlans()
+	if err != nil {
+		return nil, response, err
+	}
+
+	planMap := make(map[string]string, len(plans))
+
+	for _, p := range plans {
+		planMap[p.Key] = p.ShortName
+	}
+	return planMap, response, nil
+}
