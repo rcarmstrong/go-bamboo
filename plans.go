@@ -115,7 +115,7 @@ func (p *PlanService) ListPlans() ([]*Plan, *http.Response, error) {
 	}
 
 	q := request.URL.Query()
-	q.Set("max-results", strconv.Itoa(numPlans))
+	q.Add("max-results", strconv.Itoa(numPlans))
 	request.URL.RawQuery = q.Encode()
 
 	planResp := PlanResponse{}
