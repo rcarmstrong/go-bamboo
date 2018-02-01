@@ -9,9 +9,9 @@ import (
 // interacting with plan branches
 type PlanBranchService service
 
-// PlanBranchResponse encapsulates the information from
+// BranchesResponse encapsulates the information from
 // requesting plan branch information
-type PlanBranchResponse struct {
+type BranchesResponse struct {
 	*ResourceMetadata
 	Branches *Branches `json:"branches"`
 }
@@ -59,7 +59,7 @@ func (pb *PlanBranchService) ListPlanBranches(planKey string) ([]*Branch, *http.
 	q.Set("expand", "branches")
 	request.URL.RawQuery = q.Encode()
 
-	planBranchResponse := PlanBranchResponse{}
+	planBranchResponse := BranchesResponse{}
 	response, err := pb.client.Do(request, &planBranchResponse)
 	if err != nil {
 		return nil, response, err
@@ -70,4 +70,37 @@ func (pb *PlanBranchService) ListPlanBranches(planKey string) ([]*Branch, *http.
 	}
 
 	return planBranchResponse.Branches.BranchList, response, err
+}
+
+// ListVCSBranches returns a list of all VCS branches
+func (pb *PlanBranchService) ListVCSBranches(planKey string) ([]string, *http.Response, error) {
+	u := fmt.Sprintf("plan/%s/vcsBranches.json", planKey)
+
+	request, err := pb.client.NewRequest("GET", u, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	q := request.URL.Query()
+	// Setting max-results very high to try and get all branches
+	q.Set("max-results", "10000")
+	request.URL.RawQuery = q.Encode()
+
+	planBranchResponse := BranchesResponse{}
+	response, err := pb.client.Do(request, &planBranchResponse)
+	if err != nil {
+		return nil, response, err
+	}
+
+	if !(response.StatusCode == 200) {
+		return nil, response, &simpleError{fmt.Sprintf("Listing plan branches for %s returned %s", planKey, response.Status)}
+	}
+
+	vcsBranches := make([]string, len(planBranchResponse.Branches.BranchList))
+
+	for i, b := range planBranchResponse.Branches.BranchList {
+		vcsBranches[i] = b.Name
+	}
+
+	return vcsBranches, response, err
 }
