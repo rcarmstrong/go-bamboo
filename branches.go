@@ -93,7 +93,7 @@ func (pb *PlanBranchService) ListVCSBranches(planKey string) ([]string, *http.Re
 	}
 
 	if !(response.StatusCode == 200) {
-		return nil, response, &simpleError{fmt.Sprintf("Listing plan branches for %s returned %s", planKey, response.Status)}
+		return nil, response, &simpleError{fmt.Sprintf("Listing VCS branches for %s returned %s", planKey, response.Status)}
 	}
 
 	vcsBranches := make([]string, len(branchResponse.Branches.BranchList))
