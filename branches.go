@@ -59,8 +59,8 @@ func (pb *PlanBranchService) ListPlanBranches(planKey string) ([]*Branch, *http.
 	q.Set("expand", "branches")
 	request.URL.RawQuery = q.Encode()
 
-	planBranchResponse := BranchesResponse{}
-	response, err := pb.client.Do(request, &planBranchResponse)
+	branchResponse := BranchesResponse{}
+	response, err := pb.client.Do(request, &branchResponse)
 	if err != nil {
 		return nil, response, err
 	}
@@ -69,7 +69,7 @@ func (pb *PlanBranchService) ListPlanBranches(planKey string) ([]*Branch, *http.
 		return nil, response, &simpleError{fmt.Sprintf("Listing plan branches for %s returned %s", planKey, response.Status)}
 	}
 
-	return planBranchResponse.Branches.BranchList, response, err
+	return branchResponse.Branches.BranchList, response, err
 }
 
 // ListVCSBranches returns a list of all VCS branches
@@ -86,8 +86,8 @@ func (pb *PlanBranchService) ListVCSBranches(planKey string) ([]string, *http.Re
 	q.Set("max-results", "10000")
 	request.URL.RawQuery = q.Encode()
 
-	planBranchResponse := BranchesResponse{}
-	response, err := pb.client.Do(request, &planBranchResponse)
+	branchResponse := BranchesResponse{}
+	response, err := pb.client.Do(request, &branchResponse)
 	if err != nil {
 		return nil, response, err
 	}
@@ -96,9 +96,9 @@ func (pb *PlanBranchService) ListVCSBranches(planKey string) ([]string, *http.Re
 		return nil, response, &simpleError{fmt.Sprintf("Listing plan branches for %s returned %s", planKey, response.Status)}
 	}
 
-	vcsBranches := make([]string, len(planBranchResponse.Branches.BranchList))
+	vcsBranches := make([]string, len(branchResponse.Branches.BranchList))
 
-	for i, b := range planBranchResponse.Branches.BranchList {
+	for i, b := range branchResponse.Branches.BranchList {
 		vcsBranches[i] = b.Name
 	}
 
