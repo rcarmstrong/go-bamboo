@@ -27,6 +27,7 @@ type Client struct {
 	// Services used for talking to different parts of the Bamboo API
 	Server   *InfoService
 	Plans    *PlanService
+	Deploys  *DeployService
 	Branches *PlanBranchService
 	Projects *ProjectService
 	Results  *ResultService
@@ -68,6 +69,7 @@ func NewSimpleClient(httpClient *http.Client, username, password string) *Client
 	c := &Client{client: httpClient, BaseURL: baseURL, SimpleCreds: &SimpleCredentials{Username: username, Password: password}}
 	c.common.client = c
 	c.Plans = (*PlanService)(&c.common)
+	c.Deploys = (*DeployService)(&c.common)
 	c.Branches = (*PlanBranchService)(&c.common)
 	c.Projects = (*ProjectService)(&c.common)
 	c.Server = (*InfoService)(&c.common)
