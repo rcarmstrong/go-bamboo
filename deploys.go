@@ -45,7 +45,7 @@ type DeploymentVersion struct {
 }
 
 type QueueDeployRequest struct {
-	DeploymentResultId int   `json:"deploymentResultId"`
+	DeploymentResultID int   `json:"deploymentResultId"`
 	Link               *Link `json:"link"`
 }
 
@@ -53,6 +53,7 @@ type DeployStatus struct {
 	DeploymentVersion     *DeploymentVersion `json:"deploymentVersion"`
 	DeploymentVersionName string             `json:"deploymentVersionName"`
 	DeploymentState       string             `json:"deploymentState"`
+	LifeCycleState        string             `json:"lifeCycleState"`
 	StartedDate           int                `json:"startedDate"`
 }
 
