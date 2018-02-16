@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 )
 
 const (
@@ -61,7 +62,9 @@ func (c *Client) SetURL(desiredURL string) error {
 // authentication, provide an admin username/password
 func NewSimpleClient(httpClient *http.Client, username, password string) *Client {
 	if httpClient == nil {
-		httpClient = http.DefaultClient
+		httpClient = &http.Client{
+			Timeout: time.Second * 10,
+		}
 	}
 	baseURL, _ := url.Parse(defaultBaseURL)
 
