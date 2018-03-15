@@ -64,6 +64,34 @@ func (p *ProjectService) ProjectInfo(projectKey string) (*ProjectInformation, *h
 	return &projectInfo, response, nil
 }
 
+// ProjectPlans returns a list of plans for a given project
+func (p *ProjectService) ProjectPlans(projectKey string) ([]*Plan, *http.Response, error) {
+	var u string
+	if !emptyStrings(projectKey) {
+		u = fmt.Sprintf("project/%s.json", projectKey)
+	} else {
+		return nil, nil, &simpleError{fmt.Sprintf("Project key cannot be an empty string")}
+	}
+
+	request, err := p.client.NewRequest("GET", u, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	values := request.URL.Query()
+	values.Set("expand", "plans")
+	values.Set("max-result", "1000")
+	request.URL.RawQuery = values.Encode()
+
+	projectResponse := PlanResponse{}
+	response, err := p.client.Do(request, &projectResponse)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return projectResponse.Plans.PlanList, response, nil
+}
+
 // ListProjects lists all projects
 func (p *ProjectService) ListProjects() ([]*Project, *http.Response, error) {
 	u := "project.json"
