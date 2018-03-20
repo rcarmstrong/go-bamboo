@@ -42,7 +42,7 @@ func (i *InfoService) BuildInfo() (*BuildInfo, *http.Response, error) {
 	}
 
 	if !(response.StatusCode == 200) {
-		return nil, response, &simpleError{fmt.Sprintf("Request for server info returned %d", response.StatusCode)}
+		return nil, response, &simpleError{fmt.Sprintf("Request for server build info returned %d", response.StatusCode)}
 	}
 
 	return buildInfo, response, nil
