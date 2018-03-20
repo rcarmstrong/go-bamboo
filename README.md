@@ -1,12 +1,12 @@
 [![Build Status](https://travis-ci.org/rcarmstrong/go-bamboo.svg?branch=master)](https://travis-ci.org/rcarmstrong/go-bamboo) [![GoDoc](https://godoc.org/github.com/rcarmstrong/go-bamboo?status.svg)](https://godoc.org/github.com/rcarmstrong/go-bamboo)
 
 # Go-Bamboo
-## go-bamboo is a Go client library for accessing the Atlassian Bamboo CI API v3.
+## Go client library for communicating with an Atlassian Bamboo CI Server API.
 
 go-github requires Go version 1.7 or greater.
 
 
-**As to not confuse the ideas of an API service and a service within the code used to communicate with that API service; the code uses the term resource to describe the API service. I.e. go-bamboo exposes multiple services to communicate with the API resources.**
+**Atlassian's Bamboo API documentation refers to endpoints as 'services'. This client library was modeled after go-github which also uses the term 'service' to describe an interface that implements all methods that interact with a certain endpoint group (the plan service implements plan related methods). As to not confuse the two, this documentation will refer to an API 'service' as a resource, i.e. go-bamboo exposes multiple services to communicate with the Bamboo API resources.**
 
 ## Table of Contents ##
 - [Usage](#usage)
@@ -42,7 +42,7 @@ bambooClient := bamboo.NewSimpleClient(nil, "myUsername", "myPassword")
 bambooClient.SetURL("https://my.bambooserver.com:8085/")
 ```
 
-You may optionally pass in your own http client, replaces the nil above, to be used as the go-bamboo http client.
+You may optionally pass in your own http client, replacing the nil above, to be used as the go-bamboo http client.
 
 ## General-Information ##
 
