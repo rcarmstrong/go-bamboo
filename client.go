@@ -1,3 +1,18 @@
+// package bamboo provides a client to communicate with Atlassian Bamboo CI Server API
+//
+// Usage:
+//  import bamboo "github.com/rcarmstrong/go-bamboo"
+//
+// A Bamboo client exposes various services that control access to different parts of
+// the Bamboo API. For example:
+//  client := bamboo.NewSimpleClient(nil, "myUsername", "myPassword")
+//
+//  // Optionally set a different connection URL for the bamboo client.
+//  // Defaults to "http://localhost:8085/rest/api/latest/"
+//  client.SetURL("https://my.bambooserver.com:8085/")
+//
+//  planNames, _, err := client.Plans.ListPlanNames()
+
 package bamboo
 
 import (
