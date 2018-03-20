@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/rcarmstrong/go-bamboo.svg?branch=master)](https://travis-ci.org/rcarmstrong/go-bamboo) [![GoDoc](https://godoc.org/github.com/rcarmstrong/go-bamboo?status.svg)](https://godoc.org/github.com/rcarmstrong/go-bamboo)
+
 # Go-Bamboo
 ## go-bamboo is a Go client library for accessing the Atlassian Bamboo CI API v3.
 
