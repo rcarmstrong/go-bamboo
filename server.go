@@ -8,6 +8,9 @@ import (
 // RunningState is the state of a running Bamboo server
 const RunningState string = "RUNNING"
 
+// PausingState is when the Bamboo server is in the process of being paused
+const PausingState string = "PAUSING"
+
 // PausedState is the state of a paused Bamboo server
 const PausedState string = "PAUSED"
 
