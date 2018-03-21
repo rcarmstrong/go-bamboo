@@ -29,6 +29,14 @@ type TransitionStateInfo struct {
 	SetByUser string `json:"setByUser"`
 }
 
+// ReindexState represents the state of a server reindex.
+// ReindexInProgress - true if a reindex is in progress otherwise false
+// ReindexPending - reindex is required (i.e. it failed before or some upgrade task asked for it)
+type ReindexState struct {
+	ReindexInProgress bool `json:"reindexInProgress"`
+	ReindexPending    bool `json:"reindexPending"`
+}
+
 // Pause will move the Bamboo server to the PAUSED state.
 // The PAUSED state only prevents new builds from being scheduled. Change detection and
 // other server operations will continue to run.
@@ -93,6 +101,48 @@ func (s *ServerService) PrepareForRestart() (*TransitionStateInfo, *http.Respons
 
 	if !(response.StatusCode == 200) {
 		return nil, response, &simpleError{fmt.Sprintf("Server prepare for restart returned %d", response.StatusCode)}
+	}
+
+	return state, response, nil
+}
+
+// Reindex will start a server reindex
+func (s *ServerService) Reindex() (*ReindexState, *http.Response, error) {
+	u := "reindex"
+	request, err := s.client.NewRequest("POST", u, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	state := &ReindexState{}
+	response, err := s.client.Do(request, state)
+	if err != nil {
+		return nil, response, err
+	}
+
+	if !(response.StatusCode == 202) {
+		return nil, response, &simpleError{fmt.Sprintf("Server reindex returned %d", response.StatusCode)}
+	}
+
+	return state, response, nil
+}
+
+// ReindexStatus will start a server reindex
+func (s *ServerService) ReindexStatus() (*ReindexState, *http.Response, error) {
+	u := "reindex"
+	request, err := s.client.NewRequest("GET", u, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	state := &ReindexState{}
+	response, err := s.client.Do(request, state)
+	if err != nil {
+		return nil, response, err
+	}
+
+	if !(response.StatusCode == 200) {
+		return nil, response, &simpleError{fmt.Sprintf("Request for reindex status returned %d", response.StatusCode)}
 	}
 
 	return state, response, nil

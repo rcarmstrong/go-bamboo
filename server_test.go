@@ -48,6 +48,33 @@ func TestStateTransitions(t *testing.T) {
 	}
 }
 
+func TestReindex(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(reindexServerStateStub))
+	defer ts.Close()
+
+	client := bamboo.NewSimpleClient(nil, "", "")
+	client.SetURL(ts.URL)
+
+	var testCases = []struct {
+		expected bool
+		function func() (*bamboo.ReindexState, *http.Response, error)
+	}{
+		{true, client.Server.Reindex},
+		{true, client.Server.ReindexStatus},
+	}
+
+	for _, c := range testCases {
+		reindexState, _, err := c.function()
+		if err != nil {
+			t.Error(err)
+		}
+
+		if reindexState.ReindexInProgress != c.expected {
+			t.Error(fmt.Sprintf("Reindex method returned %t when %t was expected", reindexState.ReindexInProgress, c.expected))
+		}
+	}
+}
+
 func transitionServerStateStub(w http.ResponseWriter, r *http.Request) {
 	method := strings.Split(strings.Split(r.URL.String(), ".")[0], "/")[5]
 
@@ -69,6 +96,27 @@ func transitionServerStateStub(w http.ResponseWriter, r *http.Request) {
 	bytes, err := json.Marshal(serverState)
 	if err != nil {
 		panic(err)
+	}
+
+	w.Write(bytes)
+}
+
+func reindexServerStateStub(w http.ResponseWriter, r *http.Request) {
+	resp := bamboo.ReindexState{
+		true,
+		true,
+	}
+
+	bytes, err := json.Marshal(resp)
+	if err != nil {
+		panic(err)
+	}
+
+	switch r.Method {
+	case "POST":
+		w.WriteHeader(202)
+	case "GET":
+		w.WriteHeader(200)
 	}
 
 	w.Write(bytes)
