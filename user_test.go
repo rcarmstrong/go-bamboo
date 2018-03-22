@@ -93,6 +93,8 @@ func TestSetUserPermissions(t *testing.T) {
 func setUserPermissionsStub(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/rest/api/latest/projectplan/CORE/users/test" {
 		w.WriteHeader(http.StatusBadRequest)
+	} else if r.Method != "PUT" {
+		w.WriteHeader(http.StatusBadRequest)
 	}
 
 	permissions := []string{}
@@ -120,4 +122,80 @@ func setUserPermissionsStub(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(status)
+}
+
+func TestRemoveUserPermissions(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(removeUserPermissionsStub))
+	defer ts.Close()
+
+	client := bamboo.NewSimpleClient(nil, "", "")
+	client.SetURL(ts.URL)
+
+	permissions := []string{
+		bamboo.ReadPermission,
+		bamboo.BuildPermission,
+		bamboo.WritePermission,
+	}
+
+	resp, err := client.ProjectPlan.RemoveUserPermissions("CORE", "test", permissions)
+	if err != nil {
+		log.Println(resp.Status)
+		t.Error(err)
+	}
+}
+
+func removeUserPermissionsStub(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/rest/api/latest/projectplan/CORE/users/test" {
+		w.WriteHeader(http.StatusBadRequest)
+	} else if r.Method != "DELETE" {
+		w.WriteHeader(http.StatusBadRequest)
+	}
+
+	permissions := []string{}
+	bytes, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+	}
+
+	err = json.Unmarshal(bytes, &permissions)
+	if err != nil {
+		panic(err)
+	}
+	status := http.StatusBadRequest
+	for _, p := range permissions {
+		switch p {
+		case bamboo.ReadPermission:
+			status = http.StatusNoContent
+		case bamboo.WritePermission:
+			status = http.StatusNoContent
+		case bamboo.BuildPermission:
+			status = http.StatusNoContent
+		default:
+			status = http.StatusBadRequest
+		}
+	}
+
+	w.WriteHeader(status)
+}
+
+func TestAvailableUserPermissionsList(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(availableUserPermissionsListStub))
+	defer ts.Close()
+
+	client := bamboo.NewSimpleClient(nil, "", "")
+	client.SetURL(ts.URL)
+
+	_, resp, err := client.ProjectPlan.AvailableUserPermissionsList("CORE", nil)
+	if err != nil {
+		log.Println(resp.Status)
+		t.Error(err)
+	}
+}
+
+func availableUserPermissionsListStub(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/rest/api/latest/projectplan/CORE/available-users" {
+		w.WriteHeader(http.StatusBadRequest)
+	} else if r.URL.RawQuery != "start=0&limit=25" {
+		w.WriteHeader(http.StatusBadRequest)
+	}
 }
