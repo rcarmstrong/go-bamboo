@@ -12,8 +12,9 @@ type Group struct {
 	Permissions []string `json:"permissions,omitempty"`
 }
 
-type groupProjectPlanResponse struct {
-	results []Group
+// GroupProjectPlanResponse is the result of project plan group information request
+type GroupProjectPlanResponse struct {
+	Results []Group
 }
 
 // GroupPermissionsList returns a list of groups which have plan permissions for the given project with page limits set
@@ -27,12 +28,12 @@ func (pr *ProjectPlanService) GroupPermissionsList(projectKey string, pagination
 	}
 
 	u := fmt.Sprintf("projectplan/%s/groups?start=%d&limit=%d", projectKey, pagination.Start, pagination.Limit)
-	request, err := pr.client.NewRequest("GET", u, nil)
+	request, err := pr.client.NewRequest(http.MethodGet, u, nil)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	data := groupProjectPlanResponse{}
+	data := GroupProjectPlanResponse{}
 	response, err := pr.client.Do(request, &data)
 	if err != nil {
 		return nil, response, err
@@ -44,18 +45,18 @@ func (pr *ProjectPlanService) GroupPermissionsList(projectKey string, pagination
 		return nil, response, &simpleError{fmt.Sprintf("Retrieving group information for project %s returned %s", projectKey, response.Status)}
 	}
 
-	return data.results, nil, nil
+	return data.Results, nil, nil
 }
 
 // GroupPermissions returns the group's permissions for the given project.
 func (pr *ProjectPlanService) GroupPermissions(projectKey, group string) ([]string, *http.Response, error) {
 	u := fmt.Sprintf("projectplan/%s/groups?name=%s", projectKey, group)
-	request, err := pr.client.NewRequest("GET", u, nil)
+	request, err := pr.client.NewRequest(http.MethodGet, u, nil)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	data := groupProjectPlanResponse{}
+	data := GroupProjectPlanResponse{}
 	response, err := pr.client.Do(request, &data)
 	if err != nil {
 		return nil, response, err
@@ -67,17 +68,17 @@ func (pr *ProjectPlanService) GroupPermissions(projectKey, group string) ([]stri
 		return nil, response, &simpleError{fmt.Sprintf("Retrieving group information for project %s returned %s", projectKey, response.Status)}
 	}
 
-	if len(data.results) == 0 {
+	if len(data.Results) == 0 {
 		return nil, nil, &simpleError{fmt.Sprintf("Group %s not found in project plan permissions for %s", group, projectKey)}
 	}
 
-	return data.results[0].Permissions, nil, nil
+	return data.Results[0].Permissions, nil, nil
 }
 
 // SetGroupPermissions sets the group's permissions for the given project's plans to the passed in permissions array
 func (pr *ProjectPlanService) SetGroupPermissions(projectKey, group string, permissions []string) (*http.Response, error) {
 	u := fmt.Sprintf("projectplan/%s/groups/%s", projectKey, group)
-	request, err := pr.client.NewRequest("PUT", u, permissions)
+	request, err := pr.client.NewRequest(http.MethodPut, u, permissions)
 	if err != nil {
 		return nil, err
 	}
@@ -105,8 +106,8 @@ func (pr *ProjectPlanService) SetGroupPermissions(projectKey, group string, perm
 
 // RemoveGroupPermissions removes the given permissions from the group's permissions for the given project's plans
 func (pr *ProjectPlanService) RemoveGroupPermissions(projectKey, group string, permissions []string) (*http.Response, error) {
-	u := fmt.Sprintf("projectplan/%s/group/%s", projectKey, group)
-	request, err := pr.client.NewRequest("DELETE", u, permissions)
+	u := fmt.Sprintf("projectplan/%s/groups/%s", projectKey, group)
+	request, err := pr.client.NewRequest(http.MethodDelete, u, permissions)
 	if err != nil {
 		return nil, err
 	}
@@ -143,12 +144,12 @@ func (pr *ProjectPlanService) AvailableGroupPermissionsList(projectKey string, p
 	}
 
 	u := fmt.Sprintf("projectplan/%s/available-groups?start=%d&limit=%d", projectKey, pagination.Start, pagination.Limit)
-	request, err := pr.client.NewRequest("GET", u, nil)
+	request, err := pr.client.NewRequest(http.MethodGet, u, nil)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	data := groupProjectPlanResponse{}
+	data := GroupProjectPlanResponse{}
 	response, err := pr.client.Do(request, &data)
 	if err != nil {
 		return nil, response, err
@@ -160,5 +161,5 @@ func (pr *ProjectPlanService) AvailableGroupPermissionsList(projectKey string, p
 		return nil, response, &simpleError{fmt.Sprintf("Retrieving group permission information for project %s returned %s", projectKey, response.Status)}
 	}
 
-	return data.results, nil, nil
+	return data.Results, nil, nil
 }
