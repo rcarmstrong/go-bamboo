@@ -14,8 +14,9 @@ type User struct {
 	Permissions []string `json:"permissions,omitempty"`
 }
 
-type projectPlanResponse struct {
-	results []User
+// UserProjectPlanResponse is the result of project plan user information request
+type UserProjectPlanResponse struct {
+	Results []User `json:"results"`
 }
 
 // UserPermissionsList returns a list of users which have plan permissions for the given project with page
@@ -34,7 +35,7 @@ func (pr *ProjectPlanService) UserPermissionsList(projectKey string, pagination 
 		return nil, nil, err
 	}
 
-	data := projectPlanResponse{}
+	data := UserProjectPlanResponse{}
 	response, err := pr.client.Do(request, &data)
 	if err != nil {
 		return nil, response, err
@@ -46,7 +47,7 @@ func (pr *ProjectPlanService) UserPermissionsList(projectKey string, pagination 
 		return nil, response, &simpleError{fmt.Sprintf("Retrieving user information for project %s returned %s", projectKey, response.Status)}
 	}
 
-	return data.results, nil, nil
+	return data.Results, nil, nil
 }
 
 // UserPermissions returns the user permissions for the given user for the given project.
@@ -57,7 +58,7 @@ func (pr *ProjectPlanService) UserPermissions(projectKey, username string) ([]st
 		return nil, nil, err
 	}
 
-	data := projectPlanResponse{}
+	data := UserProjectPlanResponse{}
 	response, err := pr.client.Do(request, &data)
 	if err != nil {
 		return nil, response, err
@@ -69,11 +70,11 @@ func (pr *ProjectPlanService) UserPermissions(projectKey, username string) ([]st
 		return nil, response, &simpleError{fmt.Sprintf("Retrieving user information for project %s returned %s", projectKey, response.Status)}
 	}
 
-	if len(data.results) == 0 {
-		return nil, nil, &simpleError{fmt.Sprintf("User %s not found in project plan permissions for %s", username, projectKey)}
+	if len(data.Results) == 0 {
+		return nil, response, &simpleError{fmt.Sprintf("User %s not found in project plan permissions for %s", username, projectKey)}
 	}
 
-	return data.results[0].Permissions, nil, nil
+	return data.Results[0].Permissions, nil, nil
 }
 
 // SetUserPermissions sets the users permissions for the given project's plans to the passed in permissions array
@@ -150,7 +151,7 @@ func (pr *ProjectPlanService) AvailableUserPermissionsList(projectKey string, pa
 		return nil, nil, err
 	}
 
-	data := projectPlanResponse{}
+	data := UserProjectPlanResponse{}
 	response, err := pr.client.Do(request, &data)
 	if err != nil {
 		return nil, response, err
@@ -162,5 +163,5 @@ func (pr *ProjectPlanService) AvailableUserPermissionsList(projectKey string, pa
 		return nil, response, &simpleError{fmt.Sprintf("Retrieving user information for project %s returned %s", projectKey, response.Status)}
 	}
 
-	return data.results, nil, nil
+	return data.Results, nil, nil
 }
