@@ -173,3 +173,18 @@ func (p *PlanService) PlanNameMap() (map[string]string, *http.Response, error) {
 	}
 	return planMap, response, nil
 }
+
+// DisablePlan will disable a plan or plan branch
+func (p *PlanService) DisablePlan(planKey string) (*http.Response, error) {
+	u := "plan/%s/enable"
+	request, err := p.client.NewRequest(http.MethodDelete, u, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	response, err := p.client.Do(request, nil)
+	if err != nil {
+		return response, err
+	}
+	return response, nil
+}
