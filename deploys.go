@@ -40,16 +40,19 @@ type DeployEnvironmentResults struct {
 	Results []*DeployStatus `json:"results"`
 }
 
+// DeploymentVersion contains version information for a deployment
 type DeploymentVersion struct {
 	Name string `json:"name"`
 	ID   int    `json:"id"`
 }
 
+// QueueDeployRequest contains information from a queue deploy request
 type QueueDeployRequest struct {
 	DeploymentResultID int   `json:"deploymentResultId"`
 	Link               *Link `json:"link"`
 }
 
+// DeployStatus contains deploy status information
 type DeployStatus struct {
 	DeploymentVersion     *DeploymentVersion `json:"deploymentVersion"`
 	DeploymentVersionName string             `json:"deploymentVersionName"`
