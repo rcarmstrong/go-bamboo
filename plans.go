@@ -53,7 +53,7 @@ func (p *PlanService) CreatePlanBranch(planKey, branchName string, options *Plan
 		return false, nil, &simpleError{"Project key and/or branch name cannot be empty"}
 	}
 
-	request, err := p.client.NewRequest("PUT", u, nil)
+	request, err := p.client.NewRequest(http.MethodPut, u, nil)
 	if err != nil {
 		return false, nil, err
 	}
@@ -78,7 +78,7 @@ func (p *PlanService) CreatePlanBranch(planKey, branchName string, options *Plan
 
 // NumberOfPlans returns the number of plans on the Bamboo server
 func (p *PlanService) NumberOfPlans() (int, *http.Response, error) {
-	request, err := p.client.NewRequest("GET", "plan.json", nil)
+	request, err := p.client.NewRequest(http.MethodGet, "plan.json", nil)
 	if err != nil {
 		return 0, nil, err
 	}
@@ -109,7 +109,7 @@ func (p *PlanService) ListPlans() ([]*Plan, *http.Response, error) {
 		return nil, resp, err
 	}
 
-	request, err := p.client.NewRequest("GET", "plan.json", nil)
+	request, err := p.client.NewRequest(http.MethodGet, "plan.json", nil)
 	if err != nil {
 		return nil, nil, err
 	}

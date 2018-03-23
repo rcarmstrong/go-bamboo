@@ -19,7 +19,7 @@ func (c *CloneService) ClonePlan(srcKey, dstKey string) (*Plan, *http.Response, 
 		return nil, nil, &simpleError{"Source key and/or destination key cannot be empty strings"}
 	}
 
-	request, err := c.client.NewRequest("PUT", u, nil)
+	request, err := c.client.NewRequest(http.MethodPut, u, nil)
 	if err != nil {
 		return nil, nil, err
 	}

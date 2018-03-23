@@ -47,7 +47,7 @@ type PlanBranchExpandOptions struct {
 func (pb *PlanBranchService) ListPlanBranches(planKey string) ([]*Branch, *http.Response, error) {
 	u := fmt.Sprintf("plan/%s/.json", planKey)
 
-	request, err := pb.client.NewRequest("GET", u, nil)
+	request, err := pb.client.NewRequest(http.MethodGet, u, nil)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -76,7 +76,7 @@ func (pb *PlanBranchService) ListPlanBranches(planKey string) ([]*Branch, *http.
 func (pb *PlanBranchService) ListVCSBranches(planKey string) ([]string, *http.Response, error) {
 	u := fmt.Sprintf("plan/%s/vcsBranches.json", planKey)
 
-	request, err := pb.client.NewRequest("GET", u, nil)
+	request, err := pb.client.NewRequest(http.MethodGet, u, nil)
 	if err != nil {
 		return nil, nil, err
 	}

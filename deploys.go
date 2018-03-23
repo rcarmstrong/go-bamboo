@@ -2,6 +2,7 @@ package bamboo
 
 import (
 	"fmt"
+	"net/http"
 )
 
 // DeployService handles communication with the deploy related methods
@@ -59,7 +60,7 @@ type DeployStatus struct {
 
 // ListDeploys lists all deployments
 func (d *DeployService) ListDeploys() (DeploysResponse, error) {
-	request, err := d.client.NewRequest("GET", "deploy/project/all", nil)
+	request, err := d.client.NewRequest(http.MethodGet, "deploy/project/all", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -77,8 +78,9 @@ func (d *DeployService) ListDeploys() (DeploysResponse, error) {
 	return deployResp, nil
 }
 
+// DeployEnvironments returns information on the requested environment
 func (d *DeployService) DeployEnvironments(id int) (*DeployEnvironment, error) {
-	request, err := d.client.NewRequest("GET", fmt.Sprintf("deploy/project/%d", id), nil)
+	request, err := d.client.NewRequest(http.MethodGet, fmt.Sprintf("deploy/project/%d", id), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -96,8 +98,9 @@ func (d *DeployService) DeployEnvironments(id int) (*DeployEnvironment, error) {
 	return deployEnvironmentResp, nil
 }
 
+// DeployEnvironmentResults returns result information for the requested environment
 func (d *DeployService) DeployEnvironmentResults(id int) (*DeployEnvironmentResults, error) {
-	request, err := d.client.NewRequest("GET", fmt.Sprintf("deploy/environment/%d/results", id), nil)
+	request, err := d.client.NewRequest(http.MethodGet, fmt.Sprintf("deploy/environment/%d/results", id), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -115,8 +118,9 @@ func (d *DeployService) DeployEnvironmentResults(id int) (*DeployEnvironmentResu
 	return deployEnvironmentResultsResp, nil
 }
 
+// QueueDeploy adds a deploy of the specified version to the given environment.
 func (d *DeployService) QueueDeploy(environmentID, versionID int) (*QueueDeployRequest, error) {
-	request, err := d.client.NewRequest("POST", fmt.Sprintf("queue/deployment/?environmentId=%d&versionId=%d", environmentID, versionID), nil)
+	request, err := d.client.NewRequest(http.MethodPost, fmt.Sprintf("queue/deployment/?environmentId=%d&versionId=%d", environmentID, versionID), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -134,8 +138,9 @@ func (d *DeployService) QueueDeploy(environmentID, versionID int) (*QueueDeployR
 	return queueDeployRequest, nil
 }
 
+// DeployStatus returns information on the requested deploy
 func (d *DeployService) DeployStatus(id int) (*DeployStatus, error) {
-	request, err := d.client.NewRequest("GET", fmt.Sprintf("deploy/result/%d", id), nil)
+	request, err := d.client.NewRequest(http.MethodGet, fmt.Sprintf("deploy/result/%d", id), nil)
 	if err != nil {
 		return nil, err
 	}

@@ -25,7 +25,7 @@ func (c *LabelService) AddLabel(label *Label) (bool, *http.Response, error) {
 	}
 	u := fmt.Sprintf("result/%s/label.json", label.ResultKey)
 
-	request, err := c.client.NewRequest("POST", u, label)
+	request, err := c.client.NewRequest(http.MethodPost, u, label)
 	if err != nil {
 		return false, nil, err
 	}

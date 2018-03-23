@@ -25,7 +25,7 @@ func (c *CommentService) AddComment(comment *Comment) (bool, *http.Response, err
 	}
 	u := fmt.Sprintf("result/%s/comment.json", comment.ResultKey)
 
-	request, err := c.client.NewRequest("POST", u, comment)
+	request, err := c.client.NewRequest(http.MethodPost, u, comment)
 	if err != nil {
 		return false, nil, err
 	}

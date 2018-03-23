@@ -30,7 +30,7 @@ func (s *ServerInfo) isRunning() bool {
 // BuildInfo fetches the build information of the Bamboo server
 func (i *InfoService) BuildInfo() (*BuildInfo, *http.Response, error) {
 	u := "info.json"
-	request, err := i.client.NewRequest("GET", u, nil)
+	request, err := i.client.NewRequest(http.MethodGet, u, nil)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -51,7 +51,7 @@ func (i *InfoService) BuildInfo() (*BuildInfo, *http.Response, error) {
 // ServerInfo fetches the Bamboo server information
 func (i *InfoService) ServerInfo() (*ServerInfo, *http.Response, error) {
 	u := "server.json"
-	request, err := i.client.NewRequest("GET", u, nil)
+	request, err := i.client.NewRequest(http.MethodGet, u, nil)
 	if err != nil {
 		return nil, nil, err
 	}

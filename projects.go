@@ -50,7 +50,7 @@ func (p *ProjectService) ProjectInfo(projectKey string) (*ProjectInformation, *h
 		return nil, nil, &simpleError{fmt.Sprintf("Project key cannot be an empty string")}
 	}
 
-	request, err := p.client.NewRequest("GET", u, nil)
+	request, err := p.client.NewRequest(http.MethodGet, u, nil)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -73,7 +73,7 @@ func (p *ProjectService) ProjectPlans(projectKey string) ([]*Plan, *http.Respons
 		return nil, nil, &simpleError{fmt.Sprintf("Project key cannot be an empty string")}
 	}
 
-	request, err := p.client.NewRequest("GET", u, nil)
+	request, err := p.client.NewRequest(http.MethodGet, u, nil)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -96,7 +96,7 @@ func (p *ProjectService) ProjectPlans(projectKey string) ([]*Plan, *http.Respons
 func (p *ProjectService) ListProjects() ([]*Project, *http.Response, error) {
 	u := "project.json"
 
-	request, err := p.client.NewRequest("GET", u, nil)
+	request, err := p.client.NewRequest(http.MethodGet, u, nil)
 	if err != nil {
 		return nil, nil, err
 	}

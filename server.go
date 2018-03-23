@@ -42,7 +42,7 @@ type ReindexState struct {
 // other server operations will continue to run.
 func (s *ServerService) Pause() (*TransitionStateInfo, *http.Response, error) {
 	u := "server/pause.json"
-	request, err := s.client.NewRequest("POST", u, nil)
+	request, err := s.client.NewRequest(http.MethodPost, u, nil)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -66,7 +66,7 @@ func (s *ServerService) Pause() (*TransitionStateInfo, *http.Response, error) {
 // until the server is restarted.
 func (s *ServerService) Resume() (*TransitionStateInfo, *http.Response, error) {
 	u := "server/resume.json"
-	request, err := s.client.NewRequest("POST", u, nil)
+	request, err := s.client.NewRequest(http.MethodPost, u, nil)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -88,7 +88,7 @@ func (s *ServerService) Resume() (*TransitionStateInfo, *http.Response, error) {
 // Change detection, indexing, ec2 instance ordering etc. are stopped to allow for a server restart.
 func (s *ServerService) PrepareForRestart() (*TransitionStateInfo, *http.Response, error) {
 	u := "server/prepareForRestart.json"
-	request, err := s.client.NewRequest("PUT", u, nil)
+	request, err := s.client.NewRequest(http.MethodPut, u, nil)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -109,7 +109,7 @@ func (s *ServerService) PrepareForRestart() (*TransitionStateInfo, *http.Respons
 // Reindex will start a server reindex
 func (s *ServerService) Reindex() (*ReindexState, *http.Response, error) {
 	u := "reindex"
-	request, err := s.client.NewRequest("POST", u, nil)
+	request, err := s.client.NewRequest(http.MethodPost, u, nil)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -130,7 +130,7 @@ func (s *ServerService) Reindex() (*ReindexState, *http.Response, error) {
 // ReindexStatus will start a server reindex
 func (s *ServerService) ReindexStatus() (*ReindexState, *http.Response, error) {
 	u := "reindex"
-	request, err := s.client.NewRequest("GET", u, nil)
+	request, err := s.client.NewRequest(http.MethodGet, u, nil)
 	if err != nil {
 		return nil, nil, err
 	}
