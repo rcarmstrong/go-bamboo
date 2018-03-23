@@ -1,16 +1,21 @@
 package bamboo
 
-// WritePermission is the sting the API expects for write permissions
-const WritePermission = "WRITE"
+// WritePermission the sting the API expects for write permissions.
+// Allows a user to view and edit the configuration of the plan and its jobs, not including permissions or stages.
+const WritePermission string = "WRITE"
 
-// BuildPermission is the sting the API expects for the ability to build a plan
-const BuildPermission = "BUILD"
+// BuildPermission the sting the API expects for build permissions.
+// Allows a user to trigger a manual build, or suspend and resume the plan.
+const BuildPermission string = "BUILD"
 
-// ReadPermission is the sting the API expects for read permissions
-const ReadPermission = "READ"
+// ReadPermission the sting the API expects for read permissions.
+// Allows a user to view the plan and its builds.
+const ReadPermission string = "READ"
 
-// ClonePermission is the sting the API expects to be able to clone a plan
-const ClonePermission = "CLONE"
+// ClonePermission the sting the API expects for clone permissions.
+// Allows a user to clone the plan.
+const ClonePermission string = "CLONE"
 
-// AdminPermission is the sting the API expects for admin permissions
-const AdminPermission = "ADMINISTRATION"
+// AdminPermission is the sting the API expects for admin permissions.
+// Allows a user to edit all aspects of the plan including permissions and stages.
+const AdminPermission string = "ADMINISTRATION"

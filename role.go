@@ -6,11 +6,11 @@ import (
 	"net/http"
 )
 
-// AnonymousRole is the string the API expects for anonymous users
-const AnonymousRole = "ANONYMOUS"
+// AnonymousRole is the string the API expects for the anonymous users role.
+const AnonymousRole string = "ANONYMOUS"
 
-// LoggedInRole is the string the API expects for logged in users
-const LoggedInRole = "LOGGED_IN"
+// LoggedInRole is the string the API expects for the logged in users role.
+const LoggedInRole string = "LOGGED_IN"
 
 type roleProjectPlanResponce struct {
 	results []Role
