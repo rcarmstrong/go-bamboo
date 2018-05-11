@@ -25,7 +25,7 @@ type Role struct {
 // RolePermissionsList return a list of roles which have plan permissions for the given
 // project. Currently, only Logged In Users and Anonymous Users roles are supported.
 func (pr *ProjectPlanService) RolePermissionsList(projectKey string) ([]Role, *http.Response, error) {
-	u := fmt.Sprintf("projectplan/%s/roles", projectKey)
+	u := fmt.Sprintf("permissions/projectplan/%s/roles", projectKey)
 	request, err := pr.client.NewRequest(http.MethodGet, u, nil)
 	if err != nil {
 		return nil, nil, err
