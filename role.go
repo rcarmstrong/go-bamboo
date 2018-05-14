@@ -66,7 +66,6 @@ func (pr *ProjectPlanService) SetLoggedInUserPermissions(projectKey string, perm
 		log.Println("Logged In Users Role already had requested permissions and permission state hasn't been changed.")
 	case 204:
 		log.Println("Logged In Users Role's permissions were granted.")
-		return nil, nil
 	default:
 		return response, &simpleError{fmt.Sprintf("Server responded with unexpected return code %d", response.StatusCode)}
 	}
@@ -93,7 +92,6 @@ func (pr *ProjectPlanService) RemoveLoggedInUsersPermissions(projectKey string, 
 		log.Println("Logged In Users Role already lacked requested permissions and permission state hasn't been changed")
 	case 204:
 		log.Println("Logged In Users Role's permissions were revoked.")
-		return nil, nil
 	default:
 		return response, &simpleError{fmt.Sprintf("Server responded with unexpected return code %d", response.StatusCode)}
 	}
@@ -120,7 +118,6 @@ func (pr *ProjectPlanService) SetAnonymousReadPermission(projectKey string) (*ht
 		log.Println("Anonymous Role already had requested permissions and permission state hasn't been changed.")
 	case 204:
 		log.Println("Anonymous Role's permissions were granted.")
-		return nil, nil
 	default:
 		return response, &simpleError{fmt.Sprintf("Server responded with unexpected return code %d", response.StatusCode)}
 	}
@@ -149,7 +146,6 @@ func (pr *ProjectPlanService) RemoveAnonymousReadPermission(projectKey string) (
 		log.Println("Anonymous Role already lacked requested permissions and permission state hasn't been changed")
 	case 204:
 		log.Println("Anonymous Role's permissions were revoked.")
-		return nil, nil
 	default:
 		return response, &simpleError{fmt.Sprintf("Server responded with unexpected return code %d", response.StatusCode)}
 	}
