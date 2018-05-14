@@ -29,7 +29,7 @@ func (pr *ProjectPlanService) UserPermissionsList(projectKey string, pagination 
 		}
 	}
 
-	u := fmt.Sprintf("projectplan/%s/users?start=%d&limit=%d", projectKey, pagination.Start, pagination.Limit)
+	u := fmt.Sprintf("permissions/projectplan/%s/users?start=%d&limit=%d", projectKey, pagination.Start, pagination.Limit)
 	request, err := pr.client.NewRequest(http.MethodGet, u, nil)
 	if err != nil {
 		return nil, nil, err
@@ -52,7 +52,7 @@ func (pr *ProjectPlanService) UserPermissionsList(projectKey string, pagination 
 
 // UserPermissions returns the user permissions for the given user for the given project.
 func (pr *ProjectPlanService) UserPermissions(projectKey, username string) ([]string, *http.Response, error) {
-	u := fmt.Sprintf("projectplan/%s/users?name=%s", projectKey, username)
+	u := fmt.Sprintf("permissions/projectplan/%s/users?name=%s", projectKey, username)
 	request, err := pr.client.NewRequest(http.MethodGet, u, nil)
 	if err != nil {
 		return nil, nil, err
@@ -79,7 +79,7 @@ func (pr *ProjectPlanService) UserPermissions(projectKey, username string) ([]st
 
 // SetUserPermissions sets the users permissions for the given project's plans to the passed in permissions array
 func (pr *ProjectPlanService) SetUserPermissions(projectKey, username string, permissions []string) (*http.Response, error) {
-	u := fmt.Sprintf("projectplan/%s/users/%s", projectKey, username)
+	u := fmt.Sprintf("permissions/projectplan/%s/users/%s", projectKey, username)
 	request, err := pr.client.NewRequest(http.MethodPut, u, permissions)
 	if err != nil {
 		return nil, err
@@ -99,7 +99,6 @@ func (pr *ProjectPlanService) SetUserPermissions(projectKey, username string, pe
 		log.Println("User already had requested permissions and permission state hasn't been changed.")
 	case 204:
 		log.Println("User's permissions were granted.")
-		return nil, nil
 	default:
 		return response, &simpleError{fmt.Sprintf("Server responded with unexpected return code %d", response.StatusCode)}
 	}
@@ -108,7 +107,7 @@ func (pr *ProjectPlanService) SetUserPermissions(projectKey, username string, pe
 
 // RemoveUserPermissions removes the given permissions from the users permissions for the given project's plans
 func (pr *ProjectPlanService) RemoveUserPermissions(projectKey, username string, permissions []string) (*http.Response, error) {
-	u := fmt.Sprintf("projectplan/%s/users/%s", projectKey, username)
+	u := fmt.Sprintf("permissions/projectplan/%s/users/%s", projectKey, username)
 	request, err := pr.client.NewRequest(http.MethodDelete, u, permissions)
 	if err != nil {
 		return nil, err
@@ -128,7 +127,6 @@ func (pr *ProjectPlanService) RemoveUserPermissions(projectKey, username string,
 		log.Println("User already lacked requested permissions and permission state hasn't been changed")
 	case 204:
 		log.Println("User's permissions were revoked.")
-		return nil, nil
 	default:
 		return response, &simpleError{fmt.Sprintf("Server responded with unexpected return code %d", response.StatusCode)}
 	}
@@ -145,7 +143,7 @@ func (pr *ProjectPlanService) AvailableUserPermissionsList(projectKey string, pa
 		}
 	}
 
-	u := fmt.Sprintf("projectplan/%s/available-users?start=%d&limit=%d", projectKey, pagination.Start, pagination.Limit)
+	u := fmt.Sprintf("permissions/projectplan/%s/available-users?start=%d&limit=%d", projectKey, pagination.Start, pagination.Limit)
 	request, err := pr.client.NewRequest(http.MethodGet, u, nil)
 	if err != nil {
 		return nil, nil, err
