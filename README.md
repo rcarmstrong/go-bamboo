@@ -38,12 +38,15 @@ You may optionally pass in your own http client, replacing the nil above, to be 
 ## Bamboo Rest API Documentation ##
 Atlassian Bamboo's Rest API documentation can be frustrating at time in how much it lacks in detail. With this project, I hope to save you from some of that frustration. The API documentation can be found [here](https://docs.atlassian.com/atlassian-bamboo/REST/6.2.5/) for those who are curious, with a more detailed but incomplete doc living [here.](https://developer.atlassian.com/server/bamboo/bamboo-rest-resources/)
 
-## Elastic Configuration ##
-
--- TODO --
-
 ## Permissions ##
+Bamboo allows an admin to set access control on resources such as projects and plans. Most things have five levels of access:
+- View
+- Edit
+- Build
+- Clone
+- Admin
 
+The expected strings for these permissions are defined as the constants ReadPermission, WritePermission, BuildPermission, ClonePermission, and AdminPermission. Read and Write are the same as View and Edit, the names just differ from the UI to the API.
 
 ### Project Plan Permissions ###
 
@@ -56,80 +59,3 @@ Returns general info about the API.
 -- TODO --
 example
 
-## Server-Information ##
-
-Returns general information about the Bamboo server.
-Implemented via the InfoService.
-
--- TODO --
-example
-
-## Project-Service ##
-
-Returns information about configured projects and information about individual projects.
-Some features implemented.
-
--- TODO --
-example
-
-## Plan-Service ##
-
-Returns information about configured plans and information about individual plans.
-Some features implemented.
-
--- TODO --
-example
-
-## Result-Service ##
-
--- TODO --
-implement
-example
-
-## Chart-Service ##
-
--- TODO --
-implement
-example
-
-## Queue-Service ##
-
--- TODO --
-implement
-example
-
-## Export-Service ##
-
--- TODO --
-implement
-example
-
-## Clone-Service ##
-
--- TODO --
-implement
-example
-
-## Dependency-Service ##
-
--- TODO --
-implement
-example
-
-## Elastic-Configuration-Service ##
-
--- TODO --
-implement
-example
-
-## Reindex-Service ##
-
--- TODO --
-implement
-example
-
-## Current-User-Service ##
-
--- TODO --
-implement
-example
