@@ -14,28 +14,20 @@ type User struct {
 	Permissions []string `json:"permissions,omitempty"`
 }
 
-// UserProjectPlanResponse is the result of project plan user information request
-type UserProjectPlanResponse struct {
+// UserPermissionsResponse is the results of a user permissions request
+type UserPermissionsResponse struct {
 	Results []User `json:"results"`
 }
 
-// UserPermissionsList returns a list of users which have plan permissions for the given project with page
-// limits set by Pagination.Start and Pagination.Limit. If Pagination is nil, then start is 0 and limit is 25.
-func (pr *ProjectPlanService) UserPermissionsList(projectKey string, pagination *Pagination) ([]User, *http.Response, error) {
-	if pagination == nil {
-		pagination = &Pagination{
-			Start: 0,
-			Limit: 25,
-		}
-	}
-
-	u := fmt.Sprintf("permissions/projectplan/%s/users?start=%d&limit=%d", projectKey, pagination.Start, pagination.Limit)
+// UserPermissionsList returns a list of users which have plan permissions for all plans in the given project.
+func (pr *ProjectPlanService) UserPermissionsList(projectKey string) ([]User, *http.Response, error) {
+	u := fmt.Sprintf(projectPlanUserPermissionList, projectKey)
 	request, err := pr.client.NewRequest(http.MethodGet, u, nil)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	data := UserProjectPlanResponse{}
+	data := UserPermissionsResponse{}
 	response, err := pr.client.Do(request, &data)
 	if err != nil {
 		return nil, response, err
@@ -52,13 +44,13 @@ func (pr *ProjectPlanService) UserPermissionsList(projectKey string, pagination 
 
 // UserPermissions returns the user permissions for the given user for the given project.
 func (pr *ProjectPlanService) UserPermissions(projectKey, username string) ([]string, *http.Response, error) {
-	u := fmt.Sprintf("permissions/projectplan/%s/users?name=%s", projectKey, username)
+	u := fmt.Sprintf(projectPlanSpecificUserPermissions, projectKey, username)
 	request, err := pr.client.NewRequest(http.MethodGet, u, nil)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	data := UserProjectPlanResponse{}
+	data := UserPermissionsResponse{}
 	response, err := pr.client.Do(request, &data)
 	if err != nil {
 		return nil, response, err
@@ -71,7 +63,8 @@ func (pr *ProjectPlanService) UserPermissions(projectKey, username string) ([]st
 	}
 
 	if len(data.Results) == 0 {
-		return nil, response, &simpleError{fmt.Sprintf("User %s not found in project plan permissions for %s", username, projectKey)}
+		log.Printf("User %s not found in project plan permissions for %s\n", username, projectKey)
+		return []string{}, response, nil
 	}
 
 	return data.Results[0].Permissions, nil, nil
@@ -79,7 +72,7 @@ func (pr *ProjectPlanService) UserPermissions(projectKey, username string) ([]st
 
 // SetUserPermissions sets the users permissions for the given project's plans to the passed in permissions array
 func (pr *ProjectPlanService) SetUserPermissions(projectKey, username string, permissions []string) (*http.Response, error) {
-	u := fmt.Sprintf("permissions/projectplan/%s/users/%s", projectKey, username)
+	u := fmt.Sprintf(projectPlanEditUserPermissions, projectKey, username)
 	request, err := pr.client.NewRequest(http.MethodPut, u, permissions)
 	if err != nil {
 		return nil, err
@@ -107,7 +100,7 @@ func (pr *ProjectPlanService) SetUserPermissions(projectKey, username string, pe
 
 // RemoveUserPermissions removes the given permissions from the users permissions for the given project's plans
 func (pr *ProjectPlanService) RemoveUserPermissions(projectKey, username string, permissions []string) (*http.Response, error) {
-	u := fmt.Sprintf("permissions/projectplan/%s/users/%s", projectKey, username)
+	u := fmt.Sprintf(projectPlanEditUserPermissions, projectKey, username)
 	request, err := pr.client.NewRequest(http.MethodDelete, u, permissions)
 	if err != nil {
 		return nil, err
@@ -133,23 +126,16 @@ func (pr *ProjectPlanService) RemoveUserPermissions(projectKey, username string,
 	return nil, nil
 }
 
-// AvailableUserPermissionsList return a list of users which weren't explicitly granted any project plan permissions for the
-// given project. Page limits are set by Pagination.Start and Pagination.Limit. If Pagination is nil, then start is 0 and limit is 25.
-func (pr *ProjectPlanService) AvailableUserPermissionsList(projectKey string, pagination *Pagination) ([]User, *http.Response, error) {
-	if pagination == nil {
-		pagination = &Pagination{
-			Start: 0,
-			Limit: 25,
-		}
-	}
+// AvailableUserPermissionsList return a list of users which weren't explicitly granted any project plan permissions for the given project.
+func (pr *ProjectPlanService) AvailableUserPermissionsList(projectKey string) ([]User, *http.Response, error) {
 
-	u := fmt.Sprintf("permissions/projectplan/%s/available-users?start=%d&limit=%d", projectKey, pagination.Start, pagination.Limit)
+	u := fmt.Sprintf(projectPlanAvailableUsers, projectKey)
 	request, err := pr.client.NewRequest(http.MethodGet, u, nil)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	data := UserProjectPlanResponse{}
+	data := UserPermissionsResponse{}
 	response, err := pr.client.Do(request, &data)
 	if err != nil {
 		return nil, response, err

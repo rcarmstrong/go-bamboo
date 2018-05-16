@@ -18,7 +18,7 @@ func TestUserPermissionsList(t *testing.T) {
 	client := bamboo.NewSimpleClient(nil, "", "")
 	client.SetURL(ts.URL)
 
-	_, resp, err := client.Permissions.ProjectPlan.UserPermissionsList("CORE", nil)
+	_, resp, err := client.Permissions.ProjectPlan.UserPermissionsList("CORE")
 	if err != nil {
 		log.Println(resp.Status)
 		t.Error(err)
@@ -27,8 +27,6 @@ func TestUserPermissionsList(t *testing.T) {
 
 func userPermissionsListStub(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/rest/api/latest/permissions/projectplan/CORE/users" {
-		w.WriteHeader(http.StatusBadRequest)
-	} else if r.URL.RawQuery != "start=0&limit=25" {
 		w.WriteHeader(http.StatusBadRequest)
 	}
 }
@@ -54,7 +52,7 @@ func userPermissionsStub(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 	}
 
-	user := bamboo.UserProjectPlanResponse{
+	user := bamboo.UserPermissionsResponse{
 		Results: []bamboo.User{
 			bamboo.User{
 				Name: "test",
@@ -185,7 +183,7 @@ func TestAvailableUserPermissionsList(t *testing.T) {
 	client := bamboo.NewSimpleClient(nil, "", "")
 	client.SetURL(ts.URL)
 
-	_, resp, err := client.Permissions.ProjectPlan.AvailableUserPermissionsList("CORE", nil)
+	_, resp, err := client.Permissions.ProjectPlan.AvailableUserPermissionsList("CORE")
 	if err != nil {
 		log.Println(resp.Status)
 		t.Error(err)
@@ -194,8 +192,6 @@ func TestAvailableUserPermissionsList(t *testing.T) {
 
 func availableUserPermissionsListStub(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/rest/api/latest/permissions/projectplan/CORE/available-users" {
-		w.WriteHeader(http.StatusBadRequest)
-	} else if r.URL.RawQuery != "start=0&limit=25" {
 		w.WriteHeader(http.StatusBadRequest)
 	}
 }
