@@ -12,11 +12,11 @@ import (
 )
 
 var serverState = &bamboo.TransitionStateInfo{
-	bamboo.ServerInfo{
+	ServerInfo: bamboo.ServerInfo{
 		State:             bamboo.PausedState,
 		ReindexInProgress: false,
 	},
-	"test",
+	SetByUser: "test",
 }
 
 func TestStateTransitions(t *testing.T) {
@@ -103,8 +103,8 @@ func transitionServerStateStub(w http.ResponseWriter, r *http.Request) {
 
 func reindexServerStateStub(w http.ResponseWriter, r *http.Request) {
 	resp := bamboo.ReindexState{
-		true,
-		true,
+		ReindexInProgress: true,
+		ReindexPending:    true,
 	}
 
 	bytes, err := json.Marshal(resp)

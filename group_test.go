@@ -26,7 +26,7 @@ func TestGroupPermissionsList(t *testing.T) {
 }
 
 func groupPermissionsListStub(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/rest/api/latest/projectplan/CORE/groups" {
+	if r.URL.Path != "/rest/api/latest/permissions/projectplan/CORE/groups" {
 		w.WriteHeader(http.StatusBadRequest)
 	} else if r.URL.RawQuery != "start=0&limit=25" {
 		w.WriteHeader(http.StatusBadRequest)
@@ -48,7 +48,7 @@ func TestGroupPermissions(t *testing.T) {
 }
 
 func groupPermissionsStub(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/rest/api/latest/projectplan/CORE/groups" {
+	if r.URL.Path != "/rest/api/latest/permissions/projectplan/CORE/groups" {
 		w.WriteHeader(http.StatusBadRequest)
 	} else if r.URL.RawQuery != "name=test" {
 		w.WriteHeader(http.StatusBadRequest)
@@ -91,7 +91,7 @@ func TestSetGroupPermissions(t *testing.T) {
 }
 
 func setGroupPermissionsStub(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/rest/api/latest/projectplan/CORE/groups/test" {
+	if r.URL.Path != "/rest/api/latest/permissions/projectplan/CORE/groups/test" {
 		w.WriteHeader(http.StatusBadRequest)
 	} else if r.Method != http.MethodPut {
 		w.WriteHeader(http.StatusBadRequest)
@@ -145,7 +145,7 @@ func TestRemoveGroupPermissions(t *testing.T) {
 }
 
 func removeGroupPermissionsStub(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/rest/api/latest/projectplan/CORE/groups/test" {
+	if r.URL.Path != "/rest/api/latest/permissions/projectplan/CORE/groups/test" {
 		w.WriteHeader(http.StatusBadRequest)
 	} else if r.Method != http.MethodDelete {
 		w.WriteHeader(http.StatusBadRequest)
@@ -193,7 +193,7 @@ func TestAvailableGroupPermissionsList(t *testing.T) {
 }
 
 func availableGroupPermissionsListStub(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/rest/api/latest/projectplan/CORE/available-groups" {
+	if r.URL.Path != "/rest/api/latest/permissions/projectplan/CORE/available-groups" {
 		w.WriteHeader(http.StatusBadRequest)
 	} else if r.URL.RawQuery != "start=0&limit=25" {
 		w.WriteHeader(http.StatusBadRequest)
