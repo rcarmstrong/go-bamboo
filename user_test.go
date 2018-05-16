@@ -18,7 +18,7 @@ func TestUserPermissionsList(t *testing.T) {
 	client := bamboo.NewSimpleClient(nil, "", "")
 	client.SetURL(ts.URL)
 
-	_, resp, err := client.ProjectPlan.UserPermissionsList("CORE", nil)
+	_, resp, err := client.Permissions.ProjectPlan.UserPermissionsList("CORE", nil)
 	if err != nil {
 		log.Println(resp.Status)
 		t.Error(err)
@@ -40,7 +40,7 @@ func TestUserPermissions(t *testing.T) {
 	client := bamboo.NewSimpleClient(nil, "", "")
 	client.SetURL(ts.URL)
 
-	_, resp, err := client.ProjectPlan.UserPermissions("CORE", "test")
+	_, resp, err := client.Permissions.ProjectPlan.UserPermissions("CORE", "test")
 	if err != nil {
 		log.Println(resp.Status)
 		t.Error(err)
@@ -83,7 +83,7 @@ func TestSetUserPermissions(t *testing.T) {
 		bamboo.WritePermission,
 	}
 
-	resp, err := client.ProjectPlan.SetUserPermissions("CORE", "test", permissions)
+	resp, err := client.Permissions.ProjectPlan.SetUserPermissions("CORE", "test", permissions)
 	if err != nil {
 		log.Println(resp.Status)
 		t.Error(err)
@@ -137,7 +137,7 @@ func TestRemoveUserPermissions(t *testing.T) {
 		bamboo.WritePermission,
 	}
 
-	resp, err := client.ProjectPlan.RemoveUserPermissions("CORE", "test", permissions)
+	resp, err := client.Permissions.ProjectPlan.RemoveUserPermissions("CORE", "test", permissions)
 	if err != nil {
 		log.Println(resp.Status)
 		t.Error(err)
@@ -185,7 +185,7 @@ func TestAvailableUserPermissionsList(t *testing.T) {
 	client := bamboo.NewSimpleClient(nil, "", "")
 	client.SetURL(ts.URL)
 
-	_, resp, err := client.ProjectPlan.AvailableUserPermissionsList("CORE", nil)
+	_, resp, err := client.Permissions.ProjectPlan.AvailableUserPermissionsList("CORE", nil)
 	if err != nil {
 		log.Println(resp.Status)
 		t.Error(err)

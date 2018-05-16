@@ -18,7 +18,7 @@ func TestGroupPermissionsList(t *testing.T) {
 	client := bamboo.NewSimpleClient(nil, "", "")
 	client.SetURL(ts.URL)
 
-	_, resp, err := client.ProjectPlan.GroupPermissionsList("CORE", nil)
+	_, resp, err := client.Permissions.ProjectPlan.GroupPermissionsList("CORE", nil)
 	if err != nil {
 		log.Println(resp.Status)
 		t.Error(err)
@@ -40,7 +40,7 @@ func TestGroupPermissions(t *testing.T) {
 	client := bamboo.NewSimpleClient(nil, "", "")
 	client.SetURL(ts.URL)
 
-	_, resp, err := client.ProjectPlan.GroupPermissions("CORE", "test")
+	_, resp, err := client.Permissions.ProjectPlan.GroupPermissions("CORE", "test")
 	if err != nil {
 		log.Println(resp.Status)
 		t.Error(err)
@@ -83,7 +83,7 @@ func TestSetGroupPermissions(t *testing.T) {
 		bamboo.WritePermission,
 	}
 
-	resp, err := client.ProjectPlan.SetGroupPermissions("CORE", "test", permissions)
+	resp, err := client.Permissions.ProjectPlan.SetGroupPermissions("CORE", "test", permissions)
 	if err != nil {
 		log.Println(resp.Status)
 		t.Error(err)
@@ -137,7 +137,7 @@ func TestRemoveGroupPermissions(t *testing.T) {
 		bamboo.WritePermission,
 	}
 
-	resp, err := client.ProjectPlan.RemoveGroupPermissions("CORE", "test", permissions)
+	resp, err := client.Permissions.ProjectPlan.RemoveGroupPermissions("CORE", "test", permissions)
 	if err != nil {
 		log.Println(resp.Status)
 		t.Error(err)
@@ -185,7 +185,7 @@ func TestAvailableGroupPermissionsList(t *testing.T) {
 	client := bamboo.NewSimpleClient(nil, "", "")
 	client.SetURL(ts.URL)
 
-	_, resp, err := client.ProjectPlan.AvailableGroupPermissionsList("CORE", nil)
+	_, resp, err := client.Permissions.ProjectPlan.AvailableGroupPermissionsList("CORE", nil)
 	if err != nil {
 		log.Println(resp.Status)
 		t.Error(err)

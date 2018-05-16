@@ -19,7 +19,7 @@ func TestRolePermissionsList(t *testing.T) {
 	client := bamboo.NewSimpleClient(nil, "", "")
 	client.SetURL(ts.URL)
 
-	_, resp, err := client.ProjectPlan.RolePermissionsList("CORE")
+	_, resp, err := client.Permissions.ProjectPlan.RolePermissionsList("CORE")
 	if err != nil {
 		log.Println(resp.Status)
 		t.Error(err)
@@ -45,7 +45,7 @@ func TestSetLoggedInUserPermissions(t *testing.T) {
 		bamboo.WritePermission,
 	}
 
-	resp, err := client.ProjectPlan.SetLoggedInUserPermissions("CORE", permissions)
+	resp, err := client.Permissions.ProjectPlan.SetLoggedInUserPermissions("CORE", permissions)
 	if err != nil {
 		log.Println(resp.Status)
 		t.Error(err)
@@ -99,7 +99,7 @@ func TestRemoveLoggedInUsersPermissions(t *testing.T) {
 		bamboo.WritePermission,
 	}
 
-	resp, err := client.ProjectPlan.RemoveLoggedInUsersPermissions("CORE", permissions)
+	resp, err := client.Permissions.ProjectPlan.RemoveLoggedInUsersPermissions("CORE", permissions)
 	if err != nil {
 		log.Println(resp.Status)
 		t.Error(err)
@@ -147,7 +147,7 @@ func TestSetAnonymousReadPermission(t *testing.T) {
 	client := bamboo.NewSimpleClient(nil, "", "")
 	client.SetURL(ts.URL)
 
-	resp, err := client.ProjectPlan.SetAnonymousReadPermission("CORE")
+	resp, err := client.Permissions.ProjectPlan.SetAnonymousReadPermission("CORE")
 	if err != nil {
 		log.Println(resp.Status)
 		t.Error(err)
@@ -185,7 +185,7 @@ func TestRemoveAnonymousReadPermission(t *testing.T) {
 	client := bamboo.NewSimpleClient(nil, "", "")
 	client.SetURL(ts.URL)
 
-	resp, err := client.ProjectPlan.RemoveAnonymousReadPermission("CORE")
+	resp, err := client.Permissions.ProjectPlan.RemoveAnonymousReadPermission("CORE")
 	if err != nil {
 		log.Println(resp.Status)
 		t.Error(err)

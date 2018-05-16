@@ -19,3 +19,8 @@ const ClonePermission string = "CLONE"
 // AdminPermission is the sting the API expects for admin permissions.
 // Allows a user to edit all aspects of the plan including permissions and stages.
 const AdminPermission string = "ADMINISTRATION"
+
+// Permissions is the container for all permissions related endpoints
+type Permissions struct {
+	ProjectPlan *ProjectPlanService
+}
