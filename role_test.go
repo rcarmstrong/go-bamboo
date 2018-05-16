@@ -27,7 +27,7 @@ func TestRolePermissionsList(t *testing.T) {
 }
 
 func rolePermissionsListStub(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/rest/api/latest/projectplan/CORE/roles" {
+	if r.URL.Path != "/rest/api/latest/permissions/projectplan/CORE/roles" {
 		w.WriteHeader(http.StatusBadRequest)
 	}
 }
@@ -53,7 +53,7 @@ func TestSetLoggedInUserPermissions(t *testing.T) {
 }
 
 func setLoggedInUserPermissionsStub(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != fmt.Sprintf("/rest/api/latest/projectplan/CORE/roles/%s", bamboo.LoggedInRole) {
+	if r.URL.Path != fmt.Sprintf("/rest/api/latest/permissions/projectplan/CORE/roles/%s", bamboo.LoggedInRole) {
 		w.WriteHeader(http.StatusBadRequest)
 	} else if r.Method != http.MethodPut {
 		w.WriteHeader(http.StatusBadRequest)
@@ -107,7 +107,7 @@ func TestRemoveLoggedInUsersPermissions(t *testing.T) {
 }
 
 func removeLoggedInUsersPermissionsStub(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != fmt.Sprintf("/rest/api/latest/projectplan/CORE/roles/%s", bamboo.LoggedInRole) {
+	if r.URL.Path != fmt.Sprintf("/rest/api/latest/permissions/projectplan/CORE/roles/%s", bamboo.LoggedInRole) {
 		w.WriteHeader(http.StatusBadRequest)
 	} else if r.Method != http.MethodDelete {
 		w.WriteHeader(http.StatusBadRequest)
@@ -155,7 +155,7 @@ func TestSetAnonymousReadPermission(t *testing.T) {
 }
 
 func setAnonymousReadPermissionStub(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != fmt.Sprintf("/rest/api/latest/projectplan/CORE/roles/%s", bamboo.AnonymousRole) {
+	if r.URL.Path != fmt.Sprintf("/rest/api/latest/permissions/projectplan/CORE/roles/%s", bamboo.AnonymousRole) {
 		w.WriteHeader(http.StatusBadRequest)
 	} else if r.Method != http.MethodPut {
 		w.WriteHeader(http.StatusBadRequest)
@@ -193,7 +193,7 @@ func TestRemoveAnonymousReadPermission(t *testing.T) {
 }
 
 func removeAnonymousReadPermissionStub(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != fmt.Sprintf("/rest/api/latest/projectplan/CORE/roles/%s", bamboo.AnonymousRole) {
+	if r.URL.Path != fmt.Sprintf("/rest/api/latest/permissions/projectplan/CORE/roles/%s", bamboo.AnonymousRole) {
 		w.WriteHeader(http.StatusBadRequest)
 	} else if r.Method != http.MethodDelete {
 		w.WriteHeader(http.StatusBadRequest)

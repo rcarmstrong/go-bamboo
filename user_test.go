@@ -26,7 +26,7 @@ func TestUserPermissionsList(t *testing.T) {
 }
 
 func userPermissionsListStub(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/rest/api/latest/projectplan/CORE/users" {
+	if r.URL.Path != "/rest/api/latest/permissions/projectplan/CORE/users" {
 		w.WriteHeader(http.StatusBadRequest)
 	} else if r.URL.RawQuery != "start=0&limit=25" {
 		w.WriteHeader(http.StatusBadRequest)
@@ -48,7 +48,7 @@ func TestUserPermissions(t *testing.T) {
 }
 
 func userPermissionsStub(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/rest/api/latest/projectplan/CORE/users" {
+	if r.URL.Path != "/rest/api/latest/permissions/projectplan/CORE/users" {
 		w.WriteHeader(http.StatusBadRequest)
 	} else if r.URL.RawQuery != "name=test" {
 		w.WriteHeader(http.StatusBadRequest)
@@ -91,7 +91,7 @@ func TestSetUserPermissions(t *testing.T) {
 }
 
 func setUserPermissionsStub(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/rest/api/latest/projectplan/CORE/users/test" {
+	if r.URL.Path != "/rest/api/latest/permissions/projectplan/CORE/users/test" {
 		w.WriteHeader(http.StatusBadRequest)
 	} else if r.Method != "PUT" {
 		w.WriteHeader(http.StatusBadRequest)
@@ -145,7 +145,7 @@ func TestRemoveUserPermissions(t *testing.T) {
 }
 
 func removeUserPermissionsStub(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/rest/api/latest/projectplan/CORE/users/test" {
+	if r.URL.Path != "/rest/api/latest/permissions/projectplan/CORE/users/test" {
 		w.WriteHeader(http.StatusBadRequest)
 	} else if r.Method != "DELETE" {
 		w.WriteHeader(http.StatusBadRequest)
@@ -193,7 +193,7 @@ func TestAvailableUserPermissionsList(t *testing.T) {
 }
 
 func availableUserPermissionsListStub(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/rest/api/latest/projectplan/CORE/available-users" {
+	if r.URL.Path != "/rest/api/latest/permissions/projectplan/CORE/available-users" {
 		w.WriteHeader(http.StatusBadRequest)
 	} else if r.URL.RawQuery != "start=0&limit=25" {
 		w.WriteHeader(http.StatusBadRequest)
