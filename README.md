@@ -11,19 +11,10 @@ go-github requires Go version 1.7 or greater.
 ## Table of Contents ##
 - [Usage](#usage)
     * [Authenticaiton](#authenticaiton)
-- [General-Information](#general-information)
-- [Server-Information](#server-information)
-- [Project-Service](#project-service)
-- [Plan-Service](#plan-service)
-- [Result-Service](#result-service)
-- [Chart-Service](#chart-service)
-- [Queue-Service](#queue-service)
-- [Export-Service](#export-service)
-- [Clone-Service](#clone-service)
-- [Dependency-Service](#dependency-service)
-- [Elastic-Configuration-Service](#elastic-configuration-service)
-- [Reindex-Service](#reindex-service)
-- [Current-User-Service](#current-user-service)
+- [Bamboo Rest API Documentation](#bamboo-rest-api-documentation)
+- [Permissions](#permissions)
+    * [Project Plan Permissions](#sproject-plan-permissions)
+
 
 
 ## Usage ##
@@ -44,7 +35,21 @@ bambooClient.SetURL("https://my.bambooserver.com:8085/")
 
 You may optionally pass in your own http client, replacing the nil above, to be used as the go-bamboo http client.
 
-## General-Information ##
+## Bamboo Rest API Documentation ##
+Atlassian Bamboo's Rest API documentation can be frustrating at time in how much it lacks in detail. With this project, I hope to save you from some of that frustration. The API documentation can be found [here](https://docs.atlassian.com/atlassian-bamboo/REST/6.2.5/) for those who are curious, with a more detailed but incomplete doc living [here.](https://developer.atlassian.com/server/bamboo/bamboo-rest-resources/)
+
+## Elastic Configuration ##
+
+-- TODO --
+
+## Permissions ##
+
+
+### Project Plan Permissions ###
+
+Project plan permissions refers to the permissions a plan inherited for the project for a specific set of users, groups, or roles. The ProjectPlan service exposes the addition, removal, and changing of these permissions. Individual users, groups and the Logged In Users role can be given permission to view(read)/edit(write)/build/clone/administer(admin) the project's plans. Only the Anonymous Users role is restricted to only being able to have view permission.
+
+## Cloning a plan ##
 
 Returns general info about the API.
 
