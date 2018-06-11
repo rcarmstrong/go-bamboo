@@ -6,12 +6,6 @@ import (
 	"net/http"
 )
 
-// AnonymousRole is the string the API expects for the anonymous users role.
-const AnonymousRole string = "ANONYMOUS"
-
-// LoggedInRole is the string the API expects for the logged in users role.
-const LoggedInRole string = "LOGGED_IN"
-
 type roleProjectPlanResponce struct {
 	results []Role
 }
@@ -22,17 +16,15 @@ type Role struct {
 	Permissions []string `json:"permissions,omitempty"`
 }
 
-// RolePermissionsList return a list of roles which have plan permissions for the given
-// project. Currently, only Logged In Users and Anonymous Users roles are supported.
-func (pr *ProjectPlanService) RolePermissionsList(projectKey string) ([]Role, *http.Response, error) {
-	u := fmt.Sprintf("permissions/projectplan/%s/roles", projectKey)
-	request, err := pr.client.NewRequest(http.MethodGet, u, nil)
+// RolePermissionsList returns the list of permissions for the roles on the given entity in the given resource
+func (p *Permissions) RolePermissionsList(resource, key string) ([]Role, *http.Response, error) {
+	request, err := p.client.NewRequest(http.MethodGet, rolePermissionsListURL(resource, key), nil)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	data := roleProjectPlanResponce{}
-	response, err := pr.client.Do(request, &data)
+	response, err := p.client.Do(request, &data)
 	if err != nil {
 		return nil, response, err
 	}
@@ -40,21 +32,20 @@ func (pr *ProjectPlanService) RolePermissionsList(projectKey string) ([]Role, *h
 	if response.StatusCode == 401 {
 		return nil, response, &simpleError{"You must be an admin to access this information"}
 	} else if response.StatusCode != 200 {
-		return nil, response, &simpleError{fmt.Sprintf("Retrieving role information for project %s returned %s", projectKey, response.Status)}
+		return nil, response, &simpleError{fmt.Sprintf("Retrieving role information for project %s returned %s", key, response.Status)}
 	}
 
-	return data.results, nil, nil
+	return data.results, response, nil
 }
 
 // SetLoggedInUserPermissions sets the logged in users role's permissions for the given project's plans to the passed in permissions
-func (pr *ProjectPlanService) SetLoggedInUserPermissions(projectKey string, permissions []string) (*http.Response, error) {
-	u := fmt.Sprintf("permissions/projectplan/%s/roles/%s", projectKey, LoggedInRole)
-	request, err := pr.client.NewRequest(http.MethodPut, u, permissions)
+func (p *Permissions) SetLoggedInUserPermissions(resource, key string, permissions []string) (*http.Response, error) {
+	request, err := p.client.NewRequest(http.MethodPut, loggedInRolePermissionsURL(resource, key), permissions)
 	if err != nil {
 		return nil, err
 	}
 
-	response, err := pr.client.Do(request, nil)
+	response, err := p.client.Do(request, nil)
 	if err != nil {
 		return response, err
 	}
@@ -73,14 +64,13 @@ func (pr *ProjectPlanService) SetLoggedInUserPermissions(projectKey string, perm
 }
 
 // RemoveLoggedInUsersPermissions removes the given permissions from the logged in users role's permissions for the given project's plans
-func (pr *ProjectPlanService) RemoveLoggedInUsersPermissions(projectKey string, permissions []string) (*http.Response, error) {
-	u := fmt.Sprintf("permissions/projectplan/%s/roles/%s", projectKey, LoggedInRole)
-	request, err := pr.client.NewRequest(http.MethodDelete, u, permissions)
+func (p *Permissions) RemoveLoggedInUsersPermissions(resource, key string, permissions []string) (*http.Response, error) {
+	request, err := p.client.NewRequest(http.MethodDelete, loggedInRolePermissionsURL(resource, key), permissions)
 	if err != nil {
 		return nil, err
 	}
 
-	response, err := pr.client.Do(request, nil)
+	response, err := p.client.Do(request, nil)
 	if err != nil {
 		return response, err
 	}
@@ -99,14 +89,13 @@ func (pr *ProjectPlanService) RemoveLoggedInUsersPermissions(projectKey string, 
 }
 
 // SetAnonymousReadPermission allows anonymous users to view plans
-func (pr *ProjectPlanService) SetAnonymousReadPermission(projectKey string) (*http.Response, error) {
-	u := fmt.Sprintf("permissions/projectplan/%s/roles/%s", projectKey, AnonymousRole)
-	request, err := pr.client.NewRequest(http.MethodPut, u, []string{ReadPermission})
+func (p *Permissions) SetAnonymousReadPermission(resource, key string) (*http.Response, error) {
+	request, err := p.client.NewRequest(http.MethodPut, anonymousRolePermissionsURL(resource, key), []string{ReadPermission})
 	if err != nil {
 		return nil, err
 	}
 
-	response, err := pr.client.Do(request, nil)
+	response, err := p.client.Do(request, nil)
 	if err != nil {
 		return response, err
 	}
@@ -125,14 +114,13 @@ func (pr *ProjectPlanService) SetAnonymousReadPermission(projectKey string) (*ht
 }
 
 // RemoveAnonymousReadPermission removes the ability for anonymous users to view plans
-func (pr *ProjectPlanService) RemoveAnonymousReadPermission(projectKey string) (*http.Response, error) {
-	u := fmt.Sprintf("permissions/projectplan/%s/roles/%s", projectKey, AnonymousRole)
-	request, err := pr.client.NewRequest(http.MethodDelete, u, []string{ReadPermission})
+func (p *Permissions) RemoveAnonymousReadPermission(resource, key string) (*http.Response, error) {
+	request, err := p.client.NewRequest(http.MethodDelete, anonymousRolePermissionsURL(resource, key), []string{ReadPermission})
 	if err != nil {
 		return nil, err
 	}
 
-	response, err := pr.client.Do(request, nil)
+	response, err := p.client.Do(request, nil)
 	if err != nil {
 		return response, err
 	}
