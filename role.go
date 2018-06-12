@@ -6,19 +6,19 @@ import (
 	"net/http"
 )
 
-type roleProjectPlanResponce struct {
-	results []Role
-}
-
 // Role contains information about a role
 type Role struct {
 	Name        string   `json:"name"`
 	Permissions []string `json:"permissions,omitempty"`
 }
 
+type roleProjectPlanResponce struct {
+	Results []Role `json:"results"`
+}
+
 // RolePermissionsList returns the list of permissions for the roles on the given entity in the given resource
-func (p *Permissions) RolePermissionsList(resource, key string) ([]Role, *http.Response, error) {
-	request, err := p.client.NewRequest(http.MethodGet, rolePermissionsListURL(resource, key), nil)
+func (p *Permissions) RolePermissionsList(opts PermissionsOpts) ([]Role, *http.Response, error) {
+	request, err := p.client.NewRequest(http.MethodGet, rolePermissionsListURL(opts.Resource, opts.Key), nil)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -32,15 +32,15 @@ func (p *Permissions) RolePermissionsList(resource, key string) ([]Role, *http.R
 	if response.StatusCode == 401 {
 		return nil, response, &simpleError{"You must be an admin to access this information"}
 	} else if response.StatusCode != 200 {
-		return nil, response, &simpleError{fmt.Sprintf("Retrieving role information for project %s returned %s", key, response.Status)}
+		return nil, response, &simpleError{fmt.Sprintf("Retrieving role information for project %s returned %s", opts.Key, response.Status)}
 	}
 
-	return data.results, response, nil
+	return data.Results, response, nil
 }
 
 // SetLoggedInUserPermissions sets the logged in users role's permissions for the given project's plans to the passed in permissions
-func (p *Permissions) SetLoggedInUserPermissions(resource, key string, permissions []string) (*http.Response, error) {
-	request, err := p.client.NewRequest(http.MethodPut, loggedInRolePermissionsURL(resource, key), permissions)
+func (p *Permissions) SetLoggedInUserPermissions(permissions []string, opts PermissionsOpts) (*http.Response, error) {
+	request, err := p.client.NewRequest(http.MethodPut, loggedInRolePermissionsURL(opts.Resource, opts.Key), permissions)
 	if err != nil {
 		return nil, err
 	}
@@ -64,8 +64,8 @@ func (p *Permissions) SetLoggedInUserPermissions(resource, key string, permissio
 }
 
 // RemoveLoggedInUsersPermissions removes the given permissions from the logged in users role's permissions for the given project's plans
-func (p *Permissions) RemoveLoggedInUsersPermissions(resource, key string, permissions []string) (*http.Response, error) {
-	request, err := p.client.NewRequest(http.MethodDelete, loggedInRolePermissionsURL(resource, key), permissions)
+func (p *Permissions) RemoveLoggedInUsersPermissions(permissions []string, opts PermissionsOpts) (*http.Response, error) {
+	request, err := p.client.NewRequest(http.MethodDelete, loggedInRolePermissionsURL(opts.Resource, opts.Key), permissions)
 	if err != nil {
 		return nil, err
 	}
@@ -89,8 +89,8 @@ func (p *Permissions) RemoveLoggedInUsersPermissions(resource, key string, permi
 }
 
 // SetAnonymousReadPermission allows anonymous users to view plans
-func (p *Permissions) SetAnonymousReadPermission(resource, key string) (*http.Response, error) {
-	request, err := p.client.NewRequest(http.MethodPut, anonymousRolePermissionsURL(resource, key), []string{ReadPermission})
+func (p *Permissions) SetAnonymousReadPermission(opts PermissionsOpts) (*http.Response, error) {
+	request, err := p.client.NewRequest(http.MethodPut, anonymousRolePermissionsURL(opts.Resource, opts.Key), []string{ReadPermission})
 	if err != nil {
 		return nil, err
 	}
@@ -114,8 +114,8 @@ func (p *Permissions) SetAnonymousReadPermission(resource, key string) (*http.Re
 }
 
 // RemoveAnonymousReadPermission removes the ability for anonymous users to view plans
-func (p *Permissions) RemoveAnonymousReadPermission(resource, key string) (*http.Response, error) {
-	request, err := p.client.NewRequest(http.MethodDelete, anonymousRolePermissionsURL(resource, key), []string{ReadPermission})
+func (p *Permissions) RemoveAnonymousReadPermission(opts PermissionsOpts) (*http.Response, error) {
+	request, err := p.client.NewRequest(http.MethodDelete, anonymousRolePermissionsURL(opts.Resource, opts.Key), []string{ReadPermission})
 	if err != nil {
 		return nil, err
 	}

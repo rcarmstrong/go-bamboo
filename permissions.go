@@ -20,5 +20,39 @@ const ClonePermission string = "CLONE"
 // Allows a user to edit all aspects of the plan including permissions and stages.
 const AdminPermission string = "ADMINISTRATION"
 
+// PlanResource is the URL piece when getting plan permissions
+const PlanResource string = "plan"
+
+// GlobalResource is the URL piece when getting global permissions
+const GlobalResource string = "global"
+
+// GroupResource is the URL piece when getting group permissions
+const GroupResource string = "group"
+
+// RepositoryResource is the URL piece when getting repository permissions
+const RepositoryResource string = "repository"
+
+// ProjectResource is the URL piece when getting project permissions
+const ProjectResource string = "project"
+
+// EnvironmentResource is the URL piece when getting environment permissions
+const EnvironmentResource string = "environment"
+
+// ProjectPlanResource is the URL piece when getting projectplan permissions
+const ProjectPlanResource string = "projectplan"
+
+// DeploymentResource is the URL piece when getting deployment permissions
+const DeploymentResource string = "deployment"
+
+const permissionBase = "permissions/%s"
+
 // Permissions is the container for all permissions related endpoints
 type Permissions service
+
+// PermissionsOpts holds the name of the resource that permissions are being retrieved
+// from and the key for the specific object in that resource.
+// -- LEAVE KEY BLANK FOR GLOBAL PERMISSIONS --
+type PermissionsOpts struct {
+	Resource string
+	Key      string
+}
