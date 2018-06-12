@@ -90,7 +90,7 @@ func (p *Permissions) SetUserPermissions(username string, permissions []string, 
 	default:
 		return response, &simpleError{fmt.Sprintf("Server responded with unexpected return code %d", response.StatusCode)}
 	}
-	return nil, nil
+	return response, nil
 }
 
 // RemoveUserPermissions removes the given permissions from the users permissions for the given project's plans
@@ -117,7 +117,7 @@ func (p *Permissions) RemoveUserPermissions(username string, permissions []strin
 	default:
 		return response, &simpleError{fmt.Sprintf("Server responded with unexpected return code %d", response.StatusCode)}
 	}
-	return nil, nil
+	return response, nil
 }
 
 // AvailableUserPermissionsList return a list of users which weren't explicitly granted any project plan permissions for the given project.
@@ -139,5 +139,5 @@ func (p *Permissions) AvailableUserPermissionsList(opts PermissionsOpts) ([]User
 		return nil, response, &simpleError{fmt.Sprintf("Retrieving user information for project %s returned %s", opts.Key, response.Status)}
 	}
 
-	return data.Results, nil, nil
+	return data.Results, response, nil
 }
