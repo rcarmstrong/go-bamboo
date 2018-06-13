@@ -1,217 +1,186 @@
 package bamboo_test
 
-// import (
-// 	"encoding/json"
-// 	"fmt"
-// 	"io/ioutil"
-// 	"log"
-// 	"net/http"
-// 	"net/http/httptest"
-// 	"testing"
+import (
+	"log"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"testing"
 
-// 	bamboo "github.com/rcarmstrong/go-bamboo"
-// )
+	bamboo "github.com/rcarmstrong/go-bamboo"
+)
 
-// func TestRolePermissionsList(t *testing.T) {
-// 	ts := httptest.NewServer(http.HandlerFunc(rolePermissionsListStub))
-// 	defer ts.Close()
+func TestRolePermissionsList(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(rolePermissionsListStub))
+	defer ts.Close()
 
-// 	client := bamboo.NewSimpleClient(nil, "", "")
-// 	client.SetURL(ts.URL)
+	client := bamboo.NewSimpleClient(nil, "", "")
+	client.SetURL(ts.URL)
 
-// 	_, resp, err := client.Permissions.ProjectPlan.RolePermissionsList("CORE")
-// 	if err != nil {
-// 		log.Println(resp.Status)
-// 		t.Error(err)
-// 	}
-// }
+	for _, tc := range permissionsTestCases {
+		_, resp, err := client.Permissions.RolePermissionsList(tc)
+		if err != nil {
+			log.Println(resp.Status)
+			t.Error(err)
+		}
+	}
+}
 
-// func rolePermissionsListStub(w http.ResponseWriter, r *http.Request) {
-// 	if r.URL.Path != "/rest/api/latest/permissions/projectplan/CORE/roles" {
-// 		w.WriteHeader(http.StatusBadRequest)
-// 	}
-// }
+func rolePermissionsListStub(w http.ResponseWriter, r *http.Request) {
+	var expectedURLs = map[string]bool{
+		"global/roles":           true,
+		"plan/TEST/roles":        true,
+		"repository/TEST/roles":  true,
+		"project/TEST/roles":     true,
+		"environment/TEST/roles": true,
+		"projectplan/TEST/roles": true,
+		"deployment/TEST/roles":  true,
+	}
 
-// func TestSetLoggedInUserPermissions(t *testing.T) {
-// 	ts := httptest.NewServer(http.HandlerFunc(setLoggedInUserPermissionsStub))
-// 	defer ts.Close()
+	check := strings.Split(r.URL.String(), "permissions/")[1]
+	if expectedURLs[check] && r.Method == http.MethodGet {
+		w.WriteHeader(http.StatusOK)
+	} else {
+		w.WriteHeader(http.StatusBadRequest)
+	}
+}
 
-// 	client := bamboo.NewSimpleClient(nil, "", "")
-// 	client.SetURL(ts.URL)
+func TestSetLoggedInUserPermissions(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(setLoggedInUserPermissionsStub))
+	defer ts.Close()
 
-// 	permissions := []string{
-// 		bamboo.ReadPermission,
-// 		bamboo.BuildPermission,
-// 		bamboo.WritePermission,
-// 	}
+	client := bamboo.NewSimpleClient(nil, "", "")
+	client.SetURL(ts.URL)
 
-// 	resp, err := client.Permissions.ProjectPlan.SetLoggedInUserPermissions("CORE", permissions)
-// 	if err != nil {
-// 		log.Println(resp.Status)
-// 		t.Error(err)
-// 	}
-// }
+	for _, tc := range permissionsTestCases {
+		resp, err := client.Permissions.SetLoggedInUsersPermissions([]string{}, tc)
+		if err != nil {
+			log.Println(resp.Status)
+			t.Error(err)
+		}
+	}
+}
 
-// func setLoggedInUserPermissionsStub(w http.ResponseWriter, r *http.Request) {
-// 	if r.URL.Path != fmt.Sprintf("/rest/api/latest/permissions/projectplan/CORE/roles/%s", bamboo.LoggedInRole) {
-// 		w.WriteHeader(http.StatusBadRequest)
-// 	} else if r.Method != http.MethodPut {
-// 		w.WriteHeader(http.StatusBadRequest)
-// 	}
+func setLoggedInUserPermissionsStub(w http.ResponseWriter, r *http.Request) {
+	var expectedURLs = map[string]bool{
+		"global/roles/LOGGED_IN":           true,
+		"plan/TEST/roles/LOGGED_IN":        true,
+		"repository/TEST/roles/LOGGED_IN":  true,
+		"project/TEST/roles/LOGGED_IN":     true,
+		"environment/TEST/roles/LOGGED_IN": true,
+		"projectplan/TEST/roles/LOGGED_IN": true,
+		"deployment/TEST/roles/LOGGED_IN":  true,
+	}
 
-// 	permissions := []string{}
-// 	bytes, err := ioutil.ReadAll(r.Body)
-// 	if err != nil {
-// 		w.WriteHeader(http.StatusBadRequest)
-// 	}
+	check := strings.Split(r.URL.String(), "permissions/")[1]
+	if expectedURLs[check] && r.Method == http.MethodPut {
+		w.WriteHeader(http.StatusNoContent)
+	} else {
+		w.WriteHeader(http.StatusBadRequest)
+	}
+}
 
-// 	err = json.Unmarshal(bytes, &permissions)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	status := http.StatusBadRequest
-// 	for _, p := range permissions {
-// 		switch p {
-// 		case bamboo.ReadPermission:
-// 			status = http.StatusNoContent
-// 		case bamboo.WritePermission:
-// 			status = http.StatusNoContent
-// 		case bamboo.BuildPermission:
-// 			status = http.StatusNoContent
-// 		default:
-// 			status = http.StatusBadRequest
-// 		}
-// 	}
+func TestRemoveLoggedInUsersPermissions(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(removeLoggedInUsersPermissionsStub))
+	defer ts.Close()
 
-// 	w.WriteHeader(status)
-// }
+	client := bamboo.NewSimpleClient(nil, "", "")
+	client.SetURL(ts.URL)
 
-// func TestRemoveLoggedInUsersPermissions(t *testing.T) {
-// 	ts := httptest.NewServer(http.HandlerFunc(removeLoggedInUsersPermissionsStub))
-// 	defer ts.Close()
+	for _, tc := range permissionsTestCases {
+		resp, err := client.Permissions.RemoveLoggedInUsersPermissions([]string{}, tc)
+		if err != nil {
+			log.Println(resp.Status)
+			t.Error(err)
+		}
+	}
+}
 
-// 	client := bamboo.NewSimpleClient(nil, "", "")
-// 	client.SetURL(ts.URL)
+func removeLoggedInUsersPermissionsStub(w http.ResponseWriter, r *http.Request) {
+	var expectedURLs = map[string]bool{
+		"global/roles/LOGGED_IN":           true,
+		"plan/TEST/roles/LOGGED_IN":        true,
+		"repository/TEST/roles/LOGGED_IN":  true,
+		"project/TEST/roles/LOGGED_IN":     true,
+		"environment/TEST/roles/LOGGED_IN": true,
+		"projectplan/TEST/roles/LOGGED_IN": true,
+		"deployment/TEST/roles/LOGGED_IN":  true,
+	}
 
-// 	permissions := []string{
-// 		bamboo.ReadPermission,
-// 		bamboo.BuildPermission,
-// 		bamboo.WritePermission,
-// 	}
+	check := strings.Split(r.URL.String(), "permissions/")[1]
+	if expectedURLs[check] && r.Method == http.MethodDelete {
+		w.WriteHeader(http.StatusNoContent)
+	} else {
+		w.WriteHeader(http.StatusBadRequest)
+	}
+}
 
-// 	resp, err := client.Permissions.ProjectPlan.RemoveLoggedInUsersPermissions("CORE", permissions)
-// 	if err != nil {
-// 		log.Println(resp.Status)
-// 		t.Error(err)
-// 	}
-// }
+func TestSetAnonymousReadPermission(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(setAnonymousReadPermissionStub))
+	defer ts.Close()
 
-// func removeLoggedInUsersPermissionsStub(w http.ResponseWriter, r *http.Request) {
-// 	if r.URL.Path != fmt.Sprintf("/rest/api/latest/permissions/projectplan/CORE/roles/%s", bamboo.LoggedInRole) {
-// 		w.WriteHeader(http.StatusBadRequest)
-// 	} else if r.Method != http.MethodDelete {
-// 		w.WriteHeader(http.StatusBadRequest)
-// 	}
+	client := bamboo.NewSimpleClient(nil, "", "")
+	client.SetURL(ts.URL)
 
-// 	permissions := []string{}
-// 	bytes, err := ioutil.ReadAll(r.Body)
-// 	if err != nil {
-// 		w.WriteHeader(http.StatusBadRequest)
-// 	}
+	for _, tc := range permissionsTestCases {
+		resp, err := client.Permissions.SetAnonymousReadPermission(tc)
+		if err != nil {
+			log.Println(resp.Status)
+			t.Error(err)
+		}
+	}
+}
 
-// 	err = json.Unmarshal(bytes, &permissions)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	status := http.StatusBadRequest
-// 	for _, p := range permissions {
-// 		switch p {
-// 		case bamboo.ReadPermission:
-// 			status = http.StatusNoContent
-// 		case bamboo.WritePermission:
-// 			status = http.StatusNoContent
-// 		case bamboo.BuildPermission:
-// 			status = http.StatusNoContent
-// 		default:
-// 			status = http.StatusBadRequest
-// 		}
-// 	}
+func setAnonymousReadPermissionStub(w http.ResponseWriter, r *http.Request) {
+	var expectedURLs = map[string]bool{
+		"global/roles/ANONYMOUS":           true,
+		"plan/TEST/roles/ANONYMOUS":        true,
+		"repository/TEST/roles/ANONYMOUS":  true,
+		"project/TEST/roles/ANONYMOUS":     true,
+		"environment/TEST/roles/ANONYMOUS": true,
+		"projectplan/TEST/roles/ANONYMOUS": true,
+		"deployment/TEST/roles/ANONYMOUS":  true,
+	}
 
-// 	w.WriteHeader(status)
-// }
+	check := strings.Split(r.URL.String(), "permissions/")[1]
+	if expectedURLs[check] && r.Method == http.MethodPut {
+		w.WriteHeader(http.StatusNoContent)
+	} else {
+		w.WriteHeader(http.StatusBadRequest)
+	}
+}
 
-// func TestSetAnonymousReadPermission(t *testing.T) {
-// 	ts := httptest.NewServer(http.HandlerFunc(setAnonymousReadPermissionStub))
-// 	defer ts.Close()
+func TestRemoveAnonymousReadPermission(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(removeAnonymousReadPermissionStub))
+	defer ts.Close()
 
-// 	client := bamboo.NewSimpleClient(nil, "", "")
-// 	client.SetURL(ts.URL)
+	client := bamboo.NewSimpleClient(nil, "", "")
+	client.SetURL(ts.URL)
 
-// 	resp, err := client.Permissions.ProjectPlan.SetAnonymousReadPermission("CORE")
-// 	if err != nil {
-// 		log.Println(resp.Status)
-// 		t.Error(err)
-// 	}
-// }
+	for _, tc := range permissionsTestCases {
+		resp, err := client.Permissions.RemoveAnonymousReadPermission(tc)
+		if err != nil {
+			log.Println(resp.Status)
+			t.Error(err)
+		}
+	}
+}
 
-// func setAnonymousReadPermissionStub(w http.ResponseWriter, r *http.Request) {
-// 	if r.URL.Path != fmt.Sprintf("/rest/api/latest/permissions/projectplan/CORE/roles/%s", bamboo.AnonymousRole) {
-// 		w.WriteHeader(http.StatusBadRequest)
-// 	} else if r.Method != http.MethodPut {
-// 		w.WriteHeader(http.StatusBadRequest)
-// 	}
+func removeAnonymousReadPermissionStub(w http.ResponseWriter, r *http.Request) {
+	var expectedURLs = map[string]bool{
+		"global/roles/ANONYMOUS":           true,
+		"plan/TEST/roles/ANONYMOUS":        true,
+		"repository/TEST/roles/ANONYMOUS":  true,
+		"project/TEST/roles/ANONYMOUS":     true,
+		"environment/TEST/roles/ANONYMOUS": true,
+		"projectplan/TEST/roles/ANONYMOUS": true,
+		"deployment/TEST/roles/ANONYMOUS":  true,
+	}
 
-// 	permissions := []string{}
-// 	bytes, err := ioutil.ReadAll(r.Body)
-// 	if err != nil {
-// 		w.WriteHeader(http.StatusBadRequest)
-// 	}
-
-// 	err = json.Unmarshal(bytes, &permissions)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-
-// 	if permissions[0] != bamboo.ReadPermission {
-// 		w.WriteHeader(http.StatusBadRequest)
-// 	}
-// 	w.WriteHeader(http.StatusNoContent)
-// }
-
-// func TestRemoveAnonymousReadPermission(t *testing.T) {
-// 	ts := httptest.NewServer(http.HandlerFunc(removeAnonymousReadPermissionStub))
-// 	defer ts.Close()
-
-// 	client := bamboo.NewSimpleClient(nil, "", "")
-// 	client.SetURL(ts.URL)
-
-// 	resp, err := client.Permissions.ProjectPlan.RemoveAnonymousReadPermission("CORE")
-// 	if err != nil {
-// 		log.Println(resp.Status)
-// 		t.Error(err)
-// 	}
-// }
-
-// func removeAnonymousReadPermissionStub(w http.ResponseWriter, r *http.Request) {
-// 	if r.URL.Path != fmt.Sprintf("/rest/api/latest/permissions/projectplan/CORE/roles/%s", bamboo.AnonymousRole) {
-// 		w.WriteHeader(http.StatusBadRequest)
-// 	} else if r.Method != http.MethodDelete {
-// 		w.WriteHeader(http.StatusBadRequest)
-// 	}
-
-// 	permissions := []string{}
-// 	bytes, err := ioutil.ReadAll(r.Body)
-// 	if err != nil {
-// 		w.WriteHeader(http.StatusBadRequest)
-// 	}
-
-// 	err = json.Unmarshal(bytes, &permissions)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-
-// 	if permissions[0] != bamboo.ReadPermission {
-// 		w.WriteHeader(http.StatusBadRequest)
-// 	}
-// 	w.WriteHeader(http.StatusNoContent)
-// }
+	check := strings.Split(r.URL.String(), "permissions/")[1]
+	if expectedURLs[check] && r.Method == http.MethodDelete {
+		w.WriteHeader(http.StatusNoContent)
+	} else {
+		w.WriteHeader(http.StatusBadRequest)
+	}
+}

@@ -38,8 +38,8 @@ func (p *Permissions) RolePermissionsList(opts PermissionsOpts) ([]Role, *http.R
 	return data.Results, response, nil
 }
 
-// SetLoggedInUserPermissions sets the logged in users role's permissions for the given project's plans to the passed in permissions
-func (p *Permissions) SetLoggedInUserPermissions(permissions []string, opts PermissionsOpts) (*http.Response, error) {
+// SetLoggedInUsersPermissions sets the logged in users role's permissions for the given project's plans to the passed in permissions
+func (p *Permissions) SetLoggedInUsersPermissions(permissions []string, opts PermissionsOpts) (*http.Response, error) {
 	request, err := p.client.NewRequest(http.MethodPut, loggedInRolePermissionsURL(opts.Resource, opts.Key), permissions)
 	if err != nil {
 		return nil, err
