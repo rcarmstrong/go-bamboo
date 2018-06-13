@@ -20,6 +20,10 @@ type userPermissionsResponse struct {
 
 // UserPermissionsList returns a list of users and their permissions for the given resource key in the service
 func (p *Permissions) UserPermissionsList(opts PermissionsOpts) ([]User, *http.Response, error) {
+	if !knownResources[opts.Resource] {
+		return nil, nil, &simpleError{fmt.Sprintf("Unknown resource %s", opts.Resource)}
+	}
+
 	request, err := p.client.NewRequest(http.MethodGet, userPermissionsListURL(opts.Resource, opts.Key), nil)
 	if err != nil {
 		return nil, nil, err
@@ -42,6 +46,10 @@ func (p *Permissions) UserPermissionsList(opts PermissionsOpts) ([]User, *http.R
 
 // UserPermissions returns the permissions for the specified user on the given resource in the given service
 func (p *Permissions) UserPermissions(username string, opts PermissionsOpts) (*User, *http.Response, error) {
+	if !knownResources[opts.Resource] {
+		return nil, nil, &simpleError{fmt.Sprintf("Unknown resource %s", opts.Resource)}
+	}
+
 	request, err := p.client.NewRequest(http.MethodGet, userPermissionsURL(opts.Resource, opts.Key, username), nil)
 	if err != nil {
 		return nil, nil, err
@@ -60,7 +68,8 @@ func (p *Permissions) UserPermissions(username string, opts PermissionsOpts) (*U
 	}
 
 	if len(data.Results) == 0 {
-		return nil, response, &simpleError{"User not found"}
+		response.StatusCode = http.StatusNoContent
+		return nil, response, nil
 	}
 
 	return &data.Results[0], response, nil
@@ -68,6 +77,10 @@ func (p *Permissions) UserPermissions(username string, opts PermissionsOpts) (*U
 
 // SetUserPermissions sets the users permissions for the given project's plans to the passed in permissions array
 func (p *Permissions) SetUserPermissions(username string, permissions []string, opts PermissionsOpts) (*http.Response, error) {
+	if !knownResources[opts.Resource] {
+		return nil, &simpleError{fmt.Sprintf("Unknown resource %s", opts.Resource)}
+	}
+
 	request, err := p.client.NewRequest(http.MethodPut, editUserPermissionsURL(opts.Resource, opts.Key, username), permissions)
 	if err != nil {
 		return nil, err
@@ -95,6 +108,10 @@ func (p *Permissions) SetUserPermissions(username string, permissions []string, 
 
 // RemoveUserPermissions removes the given permissions from the users permissions for the given project's plans
 func (p *Permissions) RemoveUserPermissions(username string, permissions []string, opts PermissionsOpts) (*http.Response, error) {
+	if !knownResources[opts.Resource] {
+		return nil, &simpleError{fmt.Sprintf("Unknown resource %s", opts.Resource)}
+	}
+
 	request, err := p.client.NewRequest(http.MethodDelete, editUserPermissionsURL(opts.Resource, opts.Key, username), permissions)
 	if err != nil {
 		return nil, err
@@ -120,8 +137,12 @@ func (p *Permissions) RemoveUserPermissions(username string, permissions []strin
 	return response, nil
 }
 
-// AvailableUserPermissionsList return a list of users which weren't explicitly granted any project plan permissions for the given project.
-func (p *Permissions) AvailableUserPermissionsList(opts PermissionsOpts) ([]User, *http.Response, error) {
+// AvailableUsersPermissionsList return a list of users which weren't explicitly granted any project plan permissions for the given project.
+func (p *Permissions) AvailableUsersPermissionsList(opts PermissionsOpts) ([]User, *http.Response, error) {
+	if !knownResources[opts.Resource] {
+		return nil, nil, &simpleError{fmt.Sprintf("Unknown resource %s", opts.Resource)}
+	}
+
 	request, err := p.client.NewRequest(http.MethodGet, availableUsersURL(opts.Resource, opts.Key), nil)
 	if err != nil {
 		return nil, nil, err

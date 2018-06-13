@@ -47,6 +47,16 @@ const ProjectPlanResource string = "projectplan"
 // DeploymentResource is the URL piece when getting deployment permissions
 const DeploymentResource string = "deployment"
 
+var knownResources = map[string]bool{
+	PlanResource:        true,
+	GlobalResource:      true,
+	RepositoryResource:  true,
+	ProjectResource:     true,
+	EnvironmentResource: true,
+	ProjectPlanResource: true,
+	DeploymentResource:  true,
+}
+
 const permissionBase = "permissions/%s"
 
 // Permissions is the container for all permissions related endpoints

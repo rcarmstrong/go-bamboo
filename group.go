@@ -18,6 +18,10 @@ type groupProjectPlanResponse struct {
 
 // GroupPermissionsList returns a list of group permissions for the given resource. Leave Key blank when setting permissions globally.
 func (p *Permissions) GroupPermissionsList(opts PermissionsOpts) ([]Group, *http.Response, error) {
+	if !knownResources[opts.Resource] {
+		return nil, nil, &simpleError{fmt.Sprintf("Unknown resource %s", opts.Resource)}
+	}
+
 	request, err := p.client.NewRequest(http.MethodGet, groupPermissionsListURL(opts.Resource, opts.Key), nil)
 	if err != nil {
 		return nil, nil, err
@@ -40,6 +44,10 @@ func (p *Permissions) GroupPermissionsList(opts PermissionsOpts) ([]Group, *http
 
 // GroupPermissions returns the group's permissions for the given resource. Leave Key blank when setting permissions globally.
 func (p *Permissions) GroupPermissions(group string, opts PermissionsOpts) ([]string, *http.Response, error) {
+	if !knownResources[opts.Resource] {
+		return nil, nil, &simpleError{fmt.Sprintf("Unknown resource %s", opts.Resource)}
+	}
+
 	request, err := p.client.NewRequest(http.MethodGet, groupPermissionsURL(opts.Resource, opts.Key, group), nil)
 	if err != nil {
 		return nil, nil, err
@@ -58,7 +66,8 @@ func (p *Permissions) GroupPermissions(group string, opts PermissionsOpts) ([]st
 	}
 
 	if len(data.Results) == 0 {
-		return []string{}, response, nil
+		response.StatusCode = http.StatusNoContent
+		return nil, response, nil
 	}
 
 	return data.Results[0].Permissions, response, nil
@@ -66,6 +75,10 @@ func (p *Permissions) GroupPermissions(group string, opts PermissionsOpts) ([]st
 
 // SetGroupPermissions sets the group's permissions for the given resource. Leave Key blank when setting permissions globally.
 func (p *Permissions) SetGroupPermissions(group string, permissions []string, opts PermissionsOpts) (*http.Response, error) {
+	if !knownResources[opts.Resource] {
+		return nil, &simpleError{fmt.Sprintf("Unknown resource %s", opts.Resource)}
+	}
+
 	request, err := p.client.NewRequest(http.MethodPut, editGroupPermissionsURL(opts.Resource, opts.Key, group), permissions)
 	if err != nil {
 		return nil, err
@@ -93,6 +106,10 @@ func (p *Permissions) SetGroupPermissions(group string, permissions []string, op
 
 // RemoveGroupPermissions removes the given permissions from the group's permissions for the given project's plans. Leave Key blank when setting permissions globally.
 func (p *Permissions) RemoveGroupPermissions(group string, permissions []string, opts PermissionsOpts) (*http.Response, error) {
+	if !knownResources[opts.Resource] {
+		return nil, &simpleError{fmt.Sprintf("Unknown resource %s", opts.Resource)}
+	}
+
 	request, err := p.client.NewRequest(http.MethodDelete, editGroupPermissionsURL(opts.Resource, opts.Key, group), permissions)
 	if err != nil {
 		return nil, err
@@ -118,8 +135,12 @@ func (p *Permissions) RemoveGroupPermissions(group string, permissions []string,
 	return response, nil
 }
 
-// AvailableGroupPermissionsList returns a list of groups which weren't explicitly granted any permissions to the resource. Leave Key blank when setting permissions globally.
-func (p *Permissions) AvailableGroupPermissionsList(opts PermissionsOpts) ([]Group, *http.Response, error) {
+// AvailableGroupsPermissionsList returns a list of groups which weren't explicitly granted any permissions to the resource. Leave Key blank when setting permissions globally.
+func (p *Permissions) AvailableGroupsPermissionsList(opts PermissionsOpts) ([]Group, *http.Response, error) {
+	if !knownResources[opts.Resource] {
+		return nil, nil, &simpleError{fmt.Sprintf("Unknown resource %s", opts.Resource)}
+	}
+
 	request, err := p.client.NewRequest(http.MethodGet, availableGroupsURL(opts.Resource, opts.Key), nil)
 	if err != nil {
 		return nil, nil, err

@@ -53,9 +53,9 @@ func TestGroupPermissions(t *testing.T) {
 	client.SetURL(ts.URL)
 
 	for _, tc := range permissionsTestCases {
-		_, _, err := client.Permissions.GroupPermissions("testgroup", tc)
+		_, resp, err := client.Permissions.GroupPermissions("testgroup", tc)
 		if err != nil {
-			//log.Println(resp.Status)
+			log.Println(resp.Status)
 			t.Error(err)
 		}
 	}
@@ -150,15 +150,15 @@ func removeGroupPermissionsStub(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func TestAvailableGroupPermissionsList(t *testing.T) {
-	ts := httptest.NewServer(http.HandlerFunc(availableGroupPermissionsListStub))
+func TestAvailableGroupsPermissionsList(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(availableGroupsPermissionsListStub))
 	defer ts.Close()
 
 	client := bamboo.NewSimpleClient(nil, "", "")
 	client.SetURL(ts.URL)
 
 	for _, tc := range permissionsTestCases {
-		_, resp, err := client.Permissions.AvailableGroupPermissionsList(tc)
+		_, resp, err := client.Permissions.AvailableGroupsPermissionsList(tc)
 		if err != nil {
 			log.Println(resp.Status)
 			t.Error(err)
@@ -166,7 +166,7 @@ func TestAvailableGroupPermissionsList(t *testing.T) {
 	}
 }
 
-func availableGroupPermissionsListStub(w http.ResponseWriter, r *http.Request) {
+func availableGroupsPermissionsListStub(w http.ResponseWriter, r *http.Request) {
 	var expectedURLs = map[string]bool{
 		"global/available-groups":           true,
 		"plan/TEST/available-groups":        true,
