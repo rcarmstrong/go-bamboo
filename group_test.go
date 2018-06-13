@@ -1,11 +1,10 @@
 package bamboo_test
 
 import (
-	"encoding/json"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	bamboo "github.com/rcarmstrong/go-bamboo"
@@ -18,17 +17,30 @@ func TestGroupPermissionsList(t *testing.T) {
 	client := bamboo.NewSimpleClient(nil, "", "")
 	client.SetURL(ts.URL)
 
-	_, resp, err := client.ProjectPlan.GroupPermissionsList("CORE", nil)
-	if err != nil {
-		log.Println(resp.Status)
-		t.Error(err)
+	for _, tc := range permissionsTestCases {
+		_, resp, err := client.Permissions.GroupPermissionsList(tc)
+		if err != nil {
+			log.Println(resp.Status)
+			t.Error(err)
+		}
 	}
 }
 
 func groupPermissionsListStub(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/rest/api/latest/permissions/projectplan/CORE/groups" {
-		w.WriteHeader(http.StatusBadRequest)
-	} else if r.URL.RawQuery != "start=0&limit=25" {
+	var expectedURLs = map[string]bool{
+		"global/groups":           true,
+		"plan/TEST/groups":        true,
+		"repository/TEST/groups":  true,
+		"project/TEST/groups":     true,
+		"environment/TEST/groups": true,
+		"projectplan/TEST/groups": true,
+		"deployment/TEST/groups":  true,
+	}
+
+	check := strings.Split(r.URL.String(), "permissions/")[1]
+	if expectedURLs[check] && r.Method == http.MethodGet {
+		w.WriteHeader(http.StatusOK)
+	} else {
 		w.WriteHeader(http.StatusBadRequest)
 	}
 }
@@ -40,34 +52,32 @@ func TestGroupPermissions(t *testing.T) {
 	client := bamboo.NewSimpleClient(nil, "", "")
 	client.SetURL(ts.URL)
 
-	_, resp, err := client.ProjectPlan.GroupPermissions("CORE", "test")
-	if err != nil {
-		log.Println(resp.Status)
-		t.Error(err)
+	for _, tc := range permissionsTestCases {
+		_, resp, err := client.Permissions.GroupPermissions("testgroup", tc)
+		if err != nil {
+			log.Println(resp.Status)
+			t.Error(err)
+		}
 	}
 }
 
 func groupPermissionsStub(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/rest/api/latest/permissions/projectplan/CORE/groups" {
+	var expectedURLs = map[string]bool{
+		"global/groups?name=testgroup":           true,
+		"plan/TEST/groups?name=testgroup":        true,
+		"repository/TEST/groups?name=testgroup":  true,
+		"project/TEST/groups?name=testgroup":     true,
+		"environment/TEST/groups?name=testgroup": true,
+		"projectplan/TEST/groups?name=testgroup": true,
+		"deployment/TEST/groups?name=testgroup":  true,
+	}
+
+	check := strings.Split(r.URL.String(), "permissions/")[1]
+	if expectedURLs[check] && r.Method == http.MethodGet {
+		w.WriteHeader(http.StatusOK)
+	} else {
 		w.WriteHeader(http.StatusBadRequest)
-	} else if r.URL.RawQuery != "name=test" {
-		w.WriteHeader(http.StatusBadRequest)
 	}
-
-	group := bamboo.GroupProjectPlanResponse{
-		Results: []bamboo.Group{
-			bamboo.Group{
-				Name: "test",
-			},
-		},
-	}
-
-	data, err := json.Marshal(group)
-	if err != nil {
-		panic(err)
-	}
-
-	w.Write(data)
 }
 
 func TestSetGroupPermissions(t *testing.T) {
@@ -77,51 +87,32 @@ func TestSetGroupPermissions(t *testing.T) {
 	client := bamboo.NewSimpleClient(nil, "", "")
 	client.SetURL(ts.URL)
 
-	permissions := []string{
-		bamboo.ReadPermission,
-		bamboo.BuildPermission,
-		bamboo.WritePermission,
-	}
-
-	resp, err := client.ProjectPlan.SetGroupPermissions("CORE", "test", permissions)
-	if err != nil {
-		log.Println(resp.Status)
-		t.Error(err)
+	for _, tc := range permissionsTestCases {
+		resp, err := client.Permissions.SetGroupPermissions("testgroup", []string{}, tc)
+		if err != nil {
+			log.Println(resp.Status)
+			t.Error(err)
+		}
 	}
 }
 
 func setGroupPermissionsStub(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/rest/api/latest/permissions/projectplan/CORE/groups/test" {
-		w.WriteHeader(http.StatusBadRequest)
-	} else if r.Method != http.MethodPut {
-		w.WriteHeader(http.StatusBadRequest)
+	var expectedURLs = map[string]bool{
+		"global/groups/testgroup":           true,
+		"plan/TEST/groups/testgroup":        true,
+		"repository/TEST/groups/testgroup":  true,
+		"project/TEST/groups/testgroup":     true,
+		"environment/TEST/groups/testgroup": true,
+		"projectplan/TEST/groups/testgroup": true,
+		"deployment/TEST/groups/testgroup":  true,
 	}
 
-	permissions := []string{}
-	bytes, err := ioutil.ReadAll(r.Body)
-	if err != nil {
+	check := strings.Split(r.URL.String(), "permissions/")[1]
+	if expectedURLs[check] && r.Method == http.MethodPut {
+		w.WriteHeader(http.StatusNoContent)
+	} else {
 		w.WriteHeader(http.StatusBadRequest)
 	}
-
-	err = json.Unmarshal(bytes, &permissions)
-	if err != nil {
-		panic(err)
-	}
-	status := http.StatusBadRequest
-	for _, p := range permissions {
-		switch p {
-		case bamboo.ReadPermission:
-			status = http.StatusNoContent
-		case bamboo.WritePermission:
-			status = http.StatusNoContent
-		case bamboo.BuildPermission:
-			status = http.StatusNoContent
-		default:
-			status = http.StatusBadRequest
-		}
-	}
-
-	w.WriteHeader(status)
 }
 
 func TestRemoveGroupPermissions(t *testing.T) {
@@ -131,71 +122,65 @@ func TestRemoveGroupPermissions(t *testing.T) {
 	client := bamboo.NewSimpleClient(nil, "", "")
 	client.SetURL(ts.URL)
 
-	permissions := []string{
-		bamboo.ReadPermission,
-		bamboo.BuildPermission,
-		bamboo.WritePermission,
-	}
-
-	resp, err := client.ProjectPlan.RemoveGroupPermissions("CORE", "test", permissions)
-	if err != nil {
-		log.Println(resp.Status)
-		t.Error(err)
+	for _, tc := range permissionsTestCases {
+		resp, err := client.Permissions.RemoveGroupPermissions("testgroup", []string{}, tc)
+		if err != nil {
+			log.Println(resp.Status)
+			t.Error(err)
+		}
 	}
 }
 
 func removeGroupPermissionsStub(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/rest/api/latest/permissions/projectplan/CORE/groups/test" {
-		w.WriteHeader(http.StatusBadRequest)
-	} else if r.Method != http.MethodDelete {
-		w.WriteHeader(http.StatusBadRequest)
+	var expectedURLs = map[string]bool{
+		"global/groups/testgroup":           true,
+		"plan/TEST/groups/testgroup":        true,
+		"repository/TEST/groups/testgroup":  true,
+		"project/TEST/groups/testgroup":     true,
+		"environment/TEST/groups/testgroup": true,
+		"projectplan/TEST/groups/testgroup": true,
+		"deployment/TEST/groups/testgroup":  true,
 	}
 
-	permissions := []string{}
-	bytes, err := ioutil.ReadAll(r.Body)
-	if err != nil {
+	check := strings.Split(r.URL.String(), "permissions/")[1]
+	if expectedURLs[check] && r.Method == http.MethodDelete {
+		w.WriteHeader(http.StatusNoContent)
+	} else {
 		w.WriteHeader(http.StatusBadRequest)
 	}
-
-	err = json.Unmarshal(bytes, &permissions)
-	if err != nil {
-		panic(err)
-	}
-	status := http.StatusBadRequest
-	for _, p := range permissions {
-		switch p {
-		case bamboo.ReadPermission:
-			status = http.StatusNoContent
-		case bamboo.WritePermission:
-			status = http.StatusNoContent
-		case bamboo.BuildPermission:
-			status = http.StatusNoContent
-		default:
-			status = http.StatusBadRequest
-		}
-	}
-
-	w.WriteHeader(status)
 }
 
-func TestAvailableGroupPermissionsList(t *testing.T) {
-	ts := httptest.NewServer(http.HandlerFunc(availableGroupPermissionsListStub))
+func TestAvailableGroupsPermissionsList(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(availableGroupsPermissionsListStub))
 	defer ts.Close()
 
 	client := bamboo.NewSimpleClient(nil, "", "")
 	client.SetURL(ts.URL)
 
-	_, resp, err := client.ProjectPlan.AvailableGroupPermissionsList("CORE", nil)
-	if err != nil {
-		log.Println(resp.Status)
-		t.Error(err)
+	for _, tc := range permissionsTestCases {
+		_, resp, err := client.Permissions.AvailableGroupsPermissionsList(tc)
+		if err != nil {
+			log.Println(resp.Status)
+			t.Error(err)
+		}
 	}
 }
 
-func availableGroupPermissionsListStub(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/rest/api/latest/permissions/projectplan/CORE/available-groups" {
-		w.WriteHeader(http.StatusBadRequest)
-	} else if r.URL.RawQuery != "start=0&limit=25" {
+func availableGroupsPermissionsListStub(w http.ResponseWriter, r *http.Request) {
+	var expectedURLs = map[string]bool{
+		"global/available-groups":           true,
+		"plan/TEST/available-groups":        true,
+		"repository/TEST/available-groups":  true,
+		"project/TEST/available-groups":     true,
+		"environment/TEST/available-groups": true,
+		"projectplan/TEST/available-groups": true,
+		"deployment/TEST/available-groups":  true,
+	}
+
+	check := strings.Split(r.URL.String(), "permissions/")[1]
+	if expectedURLs[check] && r.Method == http.MethodGet {
+		w.WriteHeader(http.StatusOK)
+	} else {
 		w.WriteHeader(http.StatusBadRequest)
 	}
 }

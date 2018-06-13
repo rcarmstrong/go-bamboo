@@ -1,11 +1,10 @@
 package bamboo_test
 
 import (
-	"encoding/json"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	bamboo "github.com/rcarmstrong/go-bamboo"
@@ -18,17 +17,30 @@ func TestUserPermissionsList(t *testing.T) {
 	client := bamboo.NewSimpleClient(nil, "", "")
 	client.SetURL(ts.URL)
 
-	_, resp, err := client.ProjectPlan.UserPermissionsList("CORE", nil)
-	if err != nil {
-		log.Println(resp.Status)
-		t.Error(err)
+	for _, tc := range permissionsTestCases {
+		_, resp, err := client.Permissions.UserPermissionsList(tc)
+		if err != nil {
+			log.Println(resp.Status)
+			t.Error(err)
+		}
 	}
 }
 
 func userPermissionsListStub(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/rest/api/latest/permissions/projectplan/CORE/users" {
-		w.WriteHeader(http.StatusBadRequest)
-	} else if r.URL.RawQuery != "start=0&limit=25" {
+	var expectedURLs = map[string]bool{
+		"global/users":           true,
+		"plan/TEST/users":        true,
+		"repository/TEST/users":  true,
+		"project/TEST/users":     true,
+		"environment/TEST/users": true,
+		"projectplan/TEST/users": true,
+		"deployment/TEST/users":  true,
+	}
+
+	check := strings.Split(r.URL.String(), "permissions/")[1]
+	if expectedURLs[check] && r.Method == http.MethodGet {
+		w.WriteHeader(http.StatusOK)
+	} else {
 		w.WriteHeader(http.StatusBadRequest)
 	}
 }
@@ -40,34 +52,32 @@ func TestUserPermissions(t *testing.T) {
 	client := bamboo.NewSimpleClient(nil, "", "")
 	client.SetURL(ts.URL)
 
-	_, resp, err := client.ProjectPlan.UserPermissions("CORE", "test")
-	if err != nil {
-		log.Println(resp.Status)
-		t.Error(err)
+	for _, tc := range permissionsTestCases {
+		_, resp, err := client.Permissions.UserPermissions("testuser", tc)
+		if err != nil {
+			log.Println(resp.Status)
+			t.Error(err)
+		}
 	}
 }
 
 func userPermissionsStub(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/rest/api/latest/permissions/projectplan/CORE/users" {
+	var expectedURLs = map[string]bool{
+		"global/users?name=testuser":           true,
+		"plan/TEST/users?name=testuser":        true,
+		"repository/TEST/users?name=testuser":  true,
+		"project/TEST/users?name=testuser":     true,
+		"environment/TEST/users?name=testuser": true,
+		"projectplan/TEST/users?name=testuser": true,
+		"deployment/TEST/users?name=testuser":  true,
+	}
+
+	check := strings.Split(r.URL.String(), "permissions/")[1]
+	if expectedURLs[check] && r.Method == http.MethodGet {
+		w.WriteHeader(http.StatusOK)
+	} else {
 		w.WriteHeader(http.StatusBadRequest)
-	} else if r.URL.RawQuery != "name=test" {
-		w.WriteHeader(http.StatusBadRequest)
 	}
-
-	user := bamboo.UserProjectPlanResponse{
-		Results: []bamboo.User{
-			bamboo.User{
-				Name: "test",
-			},
-		},
-	}
-
-	userData, err := json.Marshal(user)
-	if err != nil {
-		panic(err)
-	}
-
-	w.Write(userData)
 }
 
 func TestSetUserPermissions(t *testing.T) {
@@ -77,51 +87,32 @@ func TestSetUserPermissions(t *testing.T) {
 	client := bamboo.NewSimpleClient(nil, "", "")
 	client.SetURL(ts.URL)
 
-	permissions := []string{
-		bamboo.ReadPermission,
-		bamboo.BuildPermission,
-		bamboo.WritePermission,
-	}
-
-	resp, err := client.ProjectPlan.SetUserPermissions("CORE", "test", permissions)
-	if err != nil {
-		log.Println(resp.Status)
-		t.Error(err)
+	for _, tc := range permissionsTestCases {
+		resp, err := client.Permissions.SetUserPermissions("testuser", []string{}, tc)
+		if err != nil {
+			log.Println(resp.Status)
+			t.Error(err)
+		}
 	}
 }
 
 func setUserPermissionsStub(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/rest/api/latest/permissions/projectplan/CORE/users/test" {
-		w.WriteHeader(http.StatusBadRequest)
-	} else if r.Method != "PUT" {
-		w.WriteHeader(http.StatusBadRequest)
+	var expectedURLs = map[string]bool{
+		"global/users/testuser":           true,
+		"plan/TEST/users/testuser":        true,
+		"repository/TEST/users/testuser":  true,
+		"project/TEST/users/testuser":     true,
+		"environment/TEST/users/testuser": true,
+		"projectplan/TEST/users/testuser": true,
+		"deployment/TEST/users/testuser":  true,
 	}
 
-	permissions := []string{}
-	bytes, err := ioutil.ReadAll(r.Body)
-	if err != nil {
+	check := strings.Split(r.URL.String(), "permissions/")[1]
+	if expectedURLs[check] && r.Method == http.MethodPut {
+		w.WriteHeader(http.StatusNoContent)
+	} else {
 		w.WriteHeader(http.StatusBadRequest)
 	}
-
-	err = json.Unmarshal(bytes, &permissions)
-	if err != nil {
-		panic(err)
-	}
-	status := http.StatusBadRequest
-	for _, p := range permissions {
-		switch p {
-		case bamboo.ReadPermission:
-			status = http.StatusNoContent
-		case bamboo.WritePermission:
-			status = http.StatusNoContent
-		case bamboo.BuildPermission:
-			status = http.StatusNoContent
-		default:
-			status = http.StatusBadRequest
-		}
-	}
-
-	w.WriteHeader(status)
 }
 
 func TestRemoveUserPermissions(t *testing.T) {
@@ -131,51 +122,32 @@ func TestRemoveUserPermissions(t *testing.T) {
 	client := bamboo.NewSimpleClient(nil, "", "")
 	client.SetURL(ts.URL)
 
-	permissions := []string{
-		bamboo.ReadPermission,
-		bamboo.BuildPermission,
-		bamboo.WritePermission,
-	}
-
-	resp, err := client.ProjectPlan.RemoveUserPermissions("CORE", "test", permissions)
-	if err != nil {
-		log.Println(resp.Status)
-		t.Error(err)
+	for _, tc := range permissionsTestCases {
+		resp, err := client.Permissions.RemoveUserPermissions("testuser", []string{}, tc)
+		if err != nil {
+			log.Println(resp.Status)
+			t.Error(err)
+		}
 	}
 }
 
 func removeUserPermissionsStub(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/rest/api/latest/permissions/projectplan/CORE/users/test" {
-		w.WriteHeader(http.StatusBadRequest)
-	} else if r.Method != "DELETE" {
-		w.WriteHeader(http.StatusBadRequest)
+	var expectedURLs = map[string]bool{
+		"global/users/testuser":           true,
+		"plan/TEST/users/testuser":        true,
+		"repository/TEST/users/testuser":  true,
+		"project/TEST/users/testuser":     true,
+		"environment/TEST/users/testuser": true,
+		"projectplan/TEST/users/testuser": true,
+		"deployment/TEST/users/testuser":  true,
 	}
 
-	permissions := []string{}
-	bytes, err := ioutil.ReadAll(r.Body)
-	if err != nil {
+	check := strings.Split(r.URL.String(), "permissions/")[1]
+	if expectedURLs[check] && r.Method == http.MethodDelete {
+		w.WriteHeader(http.StatusNoContent)
+	} else {
 		w.WriteHeader(http.StatusBadRequest)
 	}
-
-	err = json.Unmarshal(bytes, &permissions)
-	if err != nil {
-		panic(err)
-	}
-	status := http.StatusBadRequest
-	for _, p := range permissions {
-		switch p {
-		case bamboo.ReadPermission:
-			status = http.StatusNoContent
-		case bamboo.WritePermission:
-			status = http.StatusNoContent
-		case bamboo.BuildPermission:
-			status = http.StatusNoContent
-		default:
-			status = http.StatusBadRequest
-		}
-	}
-
-	w.WriteHeader(status)
 }
 
 func TestAvailableUserPermissionsList(t *testing.T) {
@@ -185,17 +157,30 @@ func TestAvailableUserPermissionsList(t *testing.T) {
 	client := bamboo.NewSimpleClient(nil, "", "")
 	client.SetURL(ts.URL)
 
-	_, resp, err := client.ProjectPlan.AvailableUserPermissionsList("CORE", nil)
-	if err != nil {
-		log.Println(resp.Status)
-		t.Error(err)
+	for _, tc := range permissionsTestCases {
+		_, resp, err := client.Permissions.AvailableUsersPermissionsList(tc)
+		if err != nil {
+			log.Println(resp.Status)
+			t.Error(err)
+		}
 	}
 }
 
 func availableUserPermissionsListStub(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/rest/api/latest/permissions/projectplan/CORE/available-users" {
-		w.WriteHeader(http.StatusBadRequest)
-	} else if r.URL.RawQuery != "start=0&limit=25" {
+	var expectedURLs = map[string]bool{
+		"global/available-users":           true,
+		"plan/TEST/available-users":        true,
+		"repository/TEST/available-users":  true,
+		"project/TEST/available-users":     true,
+		"environment/TEST/available-users": true,
+		"projectplan/TEST/available-users": true,
+		"deployment/TEST/available-users":  true,
+	}
+
+	check := strings.Split(r.URL.String(), "permissions/")[1]
+	if expectedURLs[check] && r.Method == http.MethodGet {
+		w.WriteHeader(http.StatusOK)
+	} else {
 		w.WriteHeader(http.StatusBadRequest)
 	}
 }
