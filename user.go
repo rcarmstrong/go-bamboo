@@ -14,29 +14,23 @@ type User struct {
 	Permissions []string `json:"permissions,omitempty"`
 }
 
-// UserProjectPlanResponse is the result of project plan user information request
-type UserProjectPlanResponse struct {
+type userPermissionsResponse struct {
 	Results []User `json:"results"`
 }
 
-// UserPermissionsList returns a list of users which have plan permissions for the given project with page
-// limits set by Pagination.Start and Pagination.Limit. If Pagination is nil, then start is 0 and limit is 25.
-func (pr *ProjectPlanService) UserPermissionsList(projectKey string, pagination *Pagination) ([]User, *http.Response, error) {
-	if pagination == nil {
-		pagination = &Pagination{
-			Start: 0,
-			Limit: 25,
-		}
+// UserPermissionsList returns a list of users and their permissions for the given resource key in the service
+func (p *Permissions) UserPermissionsList(opts PermissionsOpts) ([]User, *http.Response, error) {
+	if !knownResources[opts.Resource] {
+		return nil, nil, &simpleError{fmt.Sprintf("Unknown resource %s", opts.Resource)}
 	}
 
-	u := fmt.Sprintf("permissions/projectplan/%s/users?start=%d&limit=%d", projectKey, pagination.Start, pagination.Limit)
-	request, err := pr.client.NewRequest(http.MethodGet, u, nil)
+	request, err := p.client.NewRequest(http.MethodGet, userPermissionsListURL(opts.Resource, opts.Key), nil)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	data := UserProjectPlanResponse{}
-	response, err := pr.client.Do(request, &data)
+	data := userPermissionsResponse{}
+	response, err := p.client.Do(request, &data)
 	if err != nil {
 		return nil, response, err
 	}
@@ -44,22 +38,25 @@ func (pr *ProjectPlanService) UserPermissionsList(projectKey string, pagination 
 	if response.StatusCode == 401 {
 		return nil, response, &simpleError{"You must be an admin to access this information"}
 	} else if response.StatusCode != 200 {
-		return nil, response, &simpleError{fmt.Sprintf("Retrieving user information for project %s returned %s", projectKey, response.Status)}
+		return nil, response, &simpleError{fmt.Sprintf("Retrieving user information for resource %s in service %s returned %s", opts.Key, opts.Resource, response.Status)}
 	}
 
-	return data.Results, nil, nil
+	return data.Results, response, nil
 }
 
-// UserPermissions returns the user permissions for the given user for the given project.
-func (pr *ProjectPlanService) UserPermissions(projectKey, username string) ([]string, *http.Response, error) {
-	u := fmt.Sprintf("permissions/projectplan/%s/users?name=%s", projectKey, username)
-	request, err := pr.client.NewRequest(http.MethodGet, u, nil)
+// UserPermissions returns the permissions for the specified user on the given resource in the given service
+func (p *Permissions) UserPermissions(username string, opts PermissionsOpts) (*User, *http.Response, error) {
+	if !knownResources[opts.Resource] {
+		return nil, nil, &simpleError{fmt.Sprintf("Unknown resource %s", opts.Resource)}
+	}
+
+	request, err := p.client.NewRequest(http.MethodGet, userPermissionsURL(opts.Resource, opts.Key, username), nil)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	data := UserProjectPlanResponse{}
-	response, err := pr.client.Do(request, &data)
+	data := userPermissionsResponse{}
+	response, err := p.client.Do(request, &data)
 	if err != nil {
 		return nil, response, err
 	}
@@ -67,25 +64,29 @@ func (pr *ProjectPlanService) UserPermissions(projectKey, username string) ([]st
 	if response.StatusCode == 401 {
 		return nil, response, &simpleError{"You must be an admin to access this information"}
 	} else if response.StatusCode != 200 {
-		return nil, response, &simpleError{fmt.Sprintf("Retrieving user information for project %s returned %s", projectKey, response.Status)}
+		return nil, response, &simpleError{fmt.Sprintf("Retrieving user information for resource %s in service %s returned %s", opts.Key, opts.Resource, response.Status)}
 	}
 
 	if len(data.Results) == 0 {
-		return nil, response, &simpleError{fmt.Sprintf("User %s not found in project plan permissions for %s", username, projectKey)}
+		response.StatusCode = http.StatusNoContent
+		return nil, response, nil
 	}
 
-	return data.Results[0].Permissions, nil, nil
+	return &data.Results[0], response, nil
 }
 
 // SetUserPermissions sets the users permissions for the given project's plans to the passed in permissions array
-func (pr *ProjectPlanService) SetUserPermissions(projectKey, username string, permissions []string) (*http.Response, error) {
-	u := fmt.Sprintf("permissions/projectplan/%s/users/%s", projectKey, username)
-	request, err := pr.client.NewRequest(http.MethodPut, u, permissions)
+func (p *Permissions) SetUserPermissions(username string, permissions []string, opts PermissionsOpts) (*http.Response, error) {
+	if !knownResources[opts.Resource] {
+		return nil, &simpleError{fmt.Sprintf("Unknown resource %s", opts.Resource)}
+	}
+
+	request, err := p.client.NewRequest(http.MethodPut, editUserPermissionsURL(opts.Resource, opts.Key, username), permissions)
 	if err != nil {
 		return nil, err
 	}
 
-	response, err := pr.client.Do(request, nil)
+	response, err := p.client.Do(request, nil)
 	if err != nil {
 		return response, err
 	}
@@ -102,18 +103,21 @@ func (pr *ProjectPlanService) SetUserPermissions(projectKey, username string, pe
 	default:
 		return response, &simpleError{fmt.Sprintf("Server responded with unexpected return code %d", response.StatusCode)}
 	}
-	return nil, nil
+	return response, nil
 }
 
 // RemoveUserPermissions removes the given permissions from the users permissions for the given project's plans
-func (pr *ProjectPlanService) RemoveUserPermissions(projectKey, username string, permissions []string) (*http.Response, error) {
-	u := fmt.Sprintf("permissions/projectplan/%s/users/%s", projectKey, username)
-	request, err := pr.client.NewRequest(http.MethodDelete, u, permissions)
+func (p *Permissions) RemoveUserPermissions(username string, permissions []string, opts PermissionsOpts) (*http.Response, error) {
+	if !knownResources[opts.Resource] {
+		return nil, &simpleError{fmt.Sprintf("Unknown resource %s", opts.Resource)}
+	}
+
+	request, err := p.client.NewRequest(http.MethodDelete, editUserPermissionsURL(opts.Resource, opts.Key, username), permissions)
 	if err != nil {
 		return nil, err
 	}
 
-	response, err := pr.client.Do(request, nil)
+	response, err := p.client.Do(request, nil)
 	if err != nil {
 		return response, err
 	}
@@ -130,27 +134,22 @@ func (pr *ProjectPlanService) RemoveUserPermissions(projectKey, username string,
 	default:
 		return response, &simpleError{fmt.Sprintf("Server responded with unexpected return code %d", response.StatusCode)}
 	}
-	return nil, nil
+	return response, nil
 }
 
-// AvailableUserPermissionsList return a list of users which weren't explicitly granted any project plan permissions for the
-// given project. Page limits are set by Pagination.Start and Pagination.Limit. If Pagination is nil, then start is 0 and limit is 25.
-func (pr *ProjectPlanService) AvailableUserPermissionsList(projectKey string, pagination *Pagination) ([]User, *http.Response, error) {
-	if pagination == nil {
-		pagination = &Pagination{
-			Start: 0,
-			Limit: 25,
-		}
+// AvailableUsersPermissionsList return a list of users which weren't explicitly granted any project plan permissions for the given project.
+func (p *Permissions) AvailableUsersPermissionsList(opts PermissionsOpts) ([]User, *http.Response, error) {
+	if !knownResources[opts.Resource] {
+		return nil, nil, &simpleError{fmt.Sprintf("Unknown resource %s", opts.Resource)}
 	}
 
-	u := fmt.Sprintf("permissions/projectplan/%s/available-users?start=%d&limit=%d", projectKey, pagination.Start, pagination.Limit)
-	request, err := pr.client.NewRequest(http.MethodGet, u, nil)
+	request, err := p.client.NewRequest(http.MethodGet, availableUsersURL(opts.Resource, opts.Key), nil)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	data := UserProjectPlanResponse{}
-	response, err := pr.client.Do(request, &data)
+	data := userPermissionsResponse{}
+	response, err := p.client.Do(request, &data)
 	if err != nil {
 		return nil, response, err
 	}
@@ -158,8 +157,8 @@ func (pr *ProjectPlanService) AvailableUserPermissionsList(projectKey string, pa
 	if response.StatusCode == 401 {
 		return nil, response, &simpleError{"You must be an admin to access this information"}
 	} else if response.StatusCode != 200 {
-		return nil, response, &simpleError{fmt.Sprintf("Retrieving user information for project %s returned %s", projectKey, response.Status)}
+		return nil, response, &simpleError{fmt.Sprintf("Retrieving user information for project %s returned %s", opts.Key, response.Status)}
 	}
 
-	return data.Results, nil, nil
+	return data.Results, response, nil
 }

@@ -12,29 +12,23 @@ type Group struct {
 	Permissions []string `json:"permissions,omitempty"`
 }
 
-// GroupProjectPlanResponse is the result of project plan group information request
-type GroupProjectPlanResponse struct {
-	Results []Group
+type groupProjectPlanResponse struct {
+	Results []Group `json:"results"`
 }
 
-// GroupPermissionsList returns a list of groups which have plan permissions for the given project with page limits set
-// by Pagination.Start and Pagination.Limit. If Pagination is nil, then start is 0 and limit is 25.
-func (pr *ProjectPlanService) GroupPermissionsList(projectKey string, pagination *Pagination) ([]Group, *http.Response, error) {
-	if pagination == nil {
-		pagination = &Pagination{
-			Start: 0,
-			Limit: 25,
-		}
+// GroupPermissionsList returns a list of group permissions for the given resource. Leave Key blank when setting permissions globally.
+func (p *Permissions) GroupPermissionsList(opts PermissionsOpts) ([]Group, *http.Response, error) {
+	if !knownResources[opts.Resource] {
+		return nil, nil, &simpleError{fmt.Sprintf("Unknown resource %s", opts.Resource)}
 	}
 
-	u := fmt.Sprintf("permissions/projectplan/%s/groups?start=%d&limit=%d", projectKey, pagination.Start, pagination.Limit)
-	request, err := pr.client.NewRequest(http.MethodGet, u, nil)
+	request, err := p.client.NewRequest(http.MethodGet, groupPermissionsListURL(opts.Resource, opts.Key), nil)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	data := GroupProjectPlanResponse{}
-	response, err := pr.client.Do(request, &data)
+	data := groupProjectPlanResponse{}
+	response, err := p.client.Do(request, &data)
 	if err != nil {
 		return nil, response, err
 	}
@@ -42,22 +36,25 @@ func (pr *ProjectPlanService) GroupPermissionsList(projectKey string, pagination
 	if response.StatusCode == 401 {
 		return nil, response, &simpleError{"You must be an admin to access this information"}
 	} else if response.StatusCode != 200 {
-		return nil, response, &simpleError{fmt.Sprintf("Retrieving group information for project %s returned %s", projectKey, response.Status)}
+		return nil, response, &simpleError{fmt.Sprintf("Retrieving group information for project %s returned %s", opts.Key, response.Status)}
 	}
 
-	return data.Results, nil, nil
+	return data.Results, response, nil
 }
 
-// GroupPermissions returns the group's permissions for the given project.
-func (pr *ProjectPlanService) GroupPermissions(projectKey, group string) ([]string, *http.Response, error) {
-	u := fmt.Sprintf("permissions/projectplan/%s/groups?name=%s", projectKey, group)
-	request, err := pr.client.NewRequest(http.MethodGet, u, nil)
+// GroupPermissions returns the group's permissions for the given resource. Leave Key blank when setting permissions globally.
+func (p *Permissions) GroupPermissions(group string, opts PermissionsOpts) ([]string, *http.Response, error) {
+	if !knownResources[opts.Resource] {
+		return nil, nil, &simpleError{fmt.Sprintf("Unknown resource %s", opts.Resource)}
+	}
+
+	request, err := p.client.NewRequest(http.MethodGet, groupPermissionsURL(opts.Resource, opts.Key, group), nil)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	data := GroupProjectPlanResponse{}
-	response, err := pr.client.Do(request, &data)
+	data := groupProjectPlanResponse{}
+	response, err := p.client.Do(request, &data)
 	if err != nil {
 		return nil, response, err
 	}
@@ -65,25 +62,29 @@ func (pr *ProjectPlanService) GroupPermissions(projectKey, group string) ([]stri
 	if response.StatusCode == 401 {
 		return nil, response, &simpleError{"You must be an admin to access this information"}
 	} else if response.StatusCode != 200 {
-		return nil, response, &simpleError{fmt.Sprintf("Retrieving group information for project %s returned %s", projectKey, response.Status)}
+		return nil, response, &simpleError{fmt.Sprintf("Retrieving group information for project %s returned %s", opts.Key, response.Status)}
 	}
 
 	if len(data.Results) == 0 {
-		return nil, nil, &simpleError{fmt.Sprintf("Group %s not found in project plan permissions for %s", group, projectKey)}
+		response.StatusCode = http.StatusNoContent
+		return nil, response, nil
 	}
 
-	return data.Results[0].Permissions, nil, nil
+	return data.Results[0].Permissions, response, nil
 }
 
-// SetGroupPermissions sets the group's permissions for the given project's plans to the passed in permissions array
-func (pr *ProjectPlanService) SetGroupPermissions(projectKey, group string, permissions []string) (*http.Response, error) {
-	u := fmt.Sprintf("permissions/projectplan/%s/groups/%s", projectKey, group)
-	request, err := pr.client.NewRequest(http.MethodPut, u, permissions)
+// SetGroupPermissions sets the group's permissions for the given resource. Leave Key blank when setting permissions globally.
+func (p *Permissions) SetGroupPermissions(group string, permissions []string, opts PermissionsOpts) (*http.Response, error) {
+	if !knownResources[opts.Resource] {
+		return nil, &simpleError{fmt.Sprintf("Unknown resource %s", opts.Resource)}
+	}
+
+	request, err := p.client.NewRequest(http.MethodPut, editGroupPermissionsURL(opts.Resource, opts.Key, group), permissions)
 	if err != nil {
 		return nil, err
 	}
 
-	response, err := pr.client.Do(request, nil)
+	response, err := p.client.Do(request, nil)
 	if err != nil {
 		return response, err
 	}
@@ -97,22 +98,24 @@ func (pr *ProjectPlanService) SetGroupPermissions(projectKey, group string, perm
 		log.Println("Group already had requested permissions and permission state hasn't been changed.")
 	case 204:
 		log.Println("Group's permissions were granted.")
-		return nil, nil
 	default:
 		return response, &simpleError{fmt.Sprintf("Server responded with unexpected return code %d", response.StatusCode)}
 	}
-	return nil, nil
+	return response, nil
 }
 
-// RemoveGroupPermissions removes the given permissions from the group's permissions for the given project's plans
-func (pr *ProjectPlanService) RemoveGroupPermissions(projectKey, group string, permissions []string) (*http.Response, error) {
-	u := fmt.Sprintf("permissions/projectplan/%s/groups/%s", projectKey, group)
-	request, err := pr.client.NewRequest(http.MethodDelete, u, permissions)
+// RemoveGroupPermissions removes the given permissions from the group's permissions for the given project's plans. Leave Key blank when setting permissions globally.
+func (p *Permissions) RemoveGroupPermissions(group string, permissions []string, opts PermissionsOpts) (*http.Response, error) {
+	if !knownResources[opts.Resource] {
+		return nil, &simpleError{fmt.Sprintf("Unknown resource %s", opts.Resource)}
+	}
+
+	request, err := p.client.NewRequest(http.MethodDelete, editGroupPermissionsURL(opts.Resource, opts.Key, group), permissions)
 	if err != nil {
 		return nil, err
 	}
 
-	response, err := pr.client.Do(request, nil)
+	response, err := p.client.Do(request, nil)
 	if err != nil {
 		return response, err
 	}
@@ -126,31 +129,25 @@ func (pr *ProjectPlanService) RemoveGroupPermissions(projectKey, group string, p
 		log.Println("Group already lacked requested permissions and permission state hasn't been changed")
 	case 204:
 		log.Println("Group's permissions were revoked.")
-		return nil, nil
 	default:
 		return response, &simpleError{fmt.Sprintf("Server responded with unexpected return code %d", response.StatusCode)}
 	}
-	return nil, nil
+	return response, nil
 }
 
-// AvailableGroupPermissionsList return a list of groups which weren't explicitly granted any project plan permissions for the
-// given project. Page limits are set by Pagination.Start and Pagination.Limit. If Pagination is nil, then start is 0 and limit is 25.
-func (pr *ProjectPlanService) AvailableGroupPermissionsList(projectKey string, pagination *Pagination) ([]Group, *http.Response, error) {
-	if pagination == nil {
-		pagination = &Pagination{
-			Start: 0,
-			Limit: 25,
-		}
+// AvailableGroupsPermissionsList returns a list of groups which weren't explicitly granted any permissions to the resource. Leave Key blank when setting permissions globally.
+func (p *Permissions) AvailableGroupsPermissionsList(opts PermissionsOpts) ([]Group, *http.Response, error) {
+	if !knownResources[opts.Resource] {
+		return nil, nil, &simpleError{fmt.Sprintf("Unknown resource %s", opts.Resource)}
 	}
 
-	u := fmt.Sprintf("permissions/projectplan/%s/available-groups?start=%d&limit=%d", projectKey, pagination.Start, pagination.Limit)
-	request, err := pr.client.NewRequest(http.MethodGet, u, nil)
+	request, err := p.client.NewRequest(http.MethodGet, availableGroupsURL(opts.Resource, opts.Key), nil)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	data := GroupProjectPlanResponse{}
-	response, err := pr.client.Do(request, &data)
+	data := groupProjectPlanResponse{}
+	response, err := p.client.Do(request, &data)
 	if err != nil {
 		return nil, response, err
 	}
@@ -158,8 +155,8 @@ func (pr *ProjectPlanService) AvailableGroupPermissionsList(projectKey string, p
 	if response.StatusCode == 401 {
 		return nil, response, &simpleError{"You must be an admin to access this information"}
 	} else if response.StatusCode != 200 {
-		return nil, response, &simpleError{fmt.Sprintf("Retrieving group permission information for project %s returned %s", projectKey, response.Status)}
+		return nil, response, &simpleError{fmt.Sprintf("Retrieving group permission information for project %s returned %s", opts.Key, response.Status)}
 	}
 
-	return data.Results, nil, nil
+	return data.Results, response, nil
 }
