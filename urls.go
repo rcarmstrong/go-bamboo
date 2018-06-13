@@ -44,16 +44,16 @@ func groupPermissionsListURL(resource, key string) string {
 
 func groupPermissionsURL(resource, key, groupname string) string {
 	if resource == GlobalResource {
-		return fmt.Sprintf(permissionBase+"/group?name=%s", GlobalResource, groupname)
+		return fmt.Sprintf(permissionBase+"/groups?name=%s", GlobalResource, groupname)
 	}
-	return fmt.Sprintf(permissionBase+"/%s/group?name=%s", resource, key, groupname)
+	return fmt.Sprintf(permissionBase+"/%s/groups?name=%s", resource, key, groupname)
 }
 
 func editGroupPermissionsURL(resource, key, groupname string) string {
 	if resource == GlobalResource {
-		return fmt.Sprintf(permissionBase+"/group/%s", GlobalResource, groupname)
+		return fmt.Sprintf(permissionBase+"/groups/%s", GlobalResource, groupname)
 	}
-	return fmt.Sprintf(permissionBase+"/%s/group/%s", resource, key, groupname)
+	return fmt.Sprintf(permissionBase+"/%s/groups/%s", resource, key, groupname)
 }
 
 func availableGroupsURL(resource, key string) string {

@@ -16,8 +16,7 @@ type groupProjectPlanResponse struct {
 	Results []Group `json:"results"`
 }
 
-// GroupPermissionsList returns a list of groups which have plan permissions for the given project with page limits set
-// by Pagination.Start and Pagination.Limit. If Pagination is nil, then start is 0 and limit is 25.
+// GroupPermissionsList returns a list of group permissions for the given resource. Leave Key blank when setting permissions globally.
 func (p *Permissions) GroupPermissionsList(opts PermissionsOpts) ([]Group, *http.Response, error) {
 	request, err := p.client.NewRequest(http.MethodGet, groupPermissionsListURL(opts.Resource, opts.Key), nil)
 	if err != nil {
@@ -39,7 +38,7 @@ func (p *Permissions) GroupPermissionsList(opts PermissionsOpts) ([]Group, *http
 	return data.Results, response, nil
 }
 
-// GroupPermissions returns the group's permissions for the given project.
+// GroupPermissions returns the group's permissions for the given resource. Leave Key blank when setting permissions globally.
 func (p *Permissions) GroupPermissions(group string, opts PermissionsOpts) ([]string, *http.Response, error) {
 	request, err := p.client.NewRequest(http.MethodGet, groupPermissionsURL(opts.Resource, opts.Key, group), nil)
 	if err != nil {
@@ -59,13 +58,13 @@ func (p *Permissions) GroupPermissions(group string, opts PermissionsOpts) ([]st
 	}
 
 	if len(data.Results) == 0 {
-		return nil, nil, &simpleError{fmt.Sprintf("Group %s not found in project plan permissions for %s", group, opts.Key)}
+		return []string{}, response, nil
 	}
 
 	return data.Results[0].Permissions, response, nil
 }
 
-// SetGroupPermissions sets the group's permissions for the given project's plans to the passed in permissions array
+// SetGroupPermissions sets the group's permissions for the given resource. Leave Key blank when setting permissions globally.
 func (p *Permissions) SetGroupPermissions(group string, permissions []string, opts PermissionsOpts) (*http.Response, error) {
 	request, err := p.client.NewRequest(http.MethodPut, editGroupPermissionsURL(opts.Resource, opts.Key, group), permissions)
 	if err != nil {
@@ -86,14 +85,13 @@ func (p *Permissions) SetGroupPermissions(group string, permissions []string, op
 		log.Println("Group already had requested permissions and permission state hasn't been changed.")
 	case 204:
 		log.Println("Group's permissions were granted.")
-		return nil, nil
 	default:
 		return response, &simpleError{fmt.Sprintf("Server responded with unexpected return code %d", response.StatusCode)}
 	}
 	return response, nil
 }
 
-// RemoveGroupPermissions removes the given permissions from the group's permissions for the given project's plans
+// RemoveGroupPermissions removes the given permissions from the group's permissions for the given project's plans. Leave Key blank when setting permissions globally.
 func (p *Permissions) RemoveGroupPermissions(group string, permissions []string, opts PermissionsOpts) (*http.Response, error) {
 	request, err := p.client.NewRequest(http.MethodDelete, editGroupPermissionsURL(opts.Resource, opts.Key, group), permissions)
 	if err != nil {
@@ -114,15 +112,13 @@ func (p *Permissions) RemoveGroupPermissions(group string, permissions []string,
 		log.Println("Group already lacked requested permissions and permission state hasn't been changed")
 	case 204:
 		log.Println("Group's permissions were revoked.")
-		return response, nil
 	default:
 		return response, &simpleError{fmt.Sprintf("Server responded with unexpected return code %d", response.StatusCode)}
 	}
 	return response, nil
 }
 
-// AvailableGroupPermissionsList return a list of groups which weren't explicitly granted any project plan permissions for the
-// given project. Page limits are set by Pagination.Start and Pagination.Limit. If Pagination is nil, then start is 0 and limit is 25.
+// AvailableGroupPermissionsList returns a list of groups which weren't explicitly granted any permissions to the resource. Leave Key blank when setting permissions globally.
 func (p *Permissions) AvailableGroupPermissionsList(opts PermissionsOpts) ([]Group, *http.Response, error) {
 	request, err := p.client.NewRequest(http.MethodGet, availableGroupsURL(opts.Resource, opts.Key), nil)
 	if err != nil {

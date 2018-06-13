@@ -20,14 +20,17 @@ const ClonePermission string = "CLONE"
 // Allows a user to edit all aspects of the plan including permissions and stages.
 const AdminPermission string = "ADMINISTRATION"
 
+// CreatePermission is the string the API expects when allowing a user/group to create a resource
+const CreatePermission string = "CREATE"
+
+// CreateRepositoryPermission is the string the API expects when allowing a user/group to create a repository
+const CreateRepositoryPermission string = "CREATEREPOSITORY"
+
 // PlanResource is the URL piece when getting plan permissions
 const PlanResource string = "plan"
 
 // GlobalResource is the URL piece when getting global permissions
 const GlobalResource string = "global"
-
-// GroupResource is the URL piece when getting group permissions
-const GroupResource string = "group"
 
 // RepositoryResource is the URL piece when getting repository permissions
 const RepositoryResource string = "repository"
