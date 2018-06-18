@@ -57,8 +57,6 @@ var knownResources = map[string]bool{
 	DeploymentResource:  true,
 }
 
-const permissionBase = "permissions/%s"
-
 // Permissions is the container for all permissions related endpoints
 type Permissions service
 
