@@ -49,14 +49,16 @@ type Change struct {
 
 // LatestResult returns the latest result information for the given plan key
 func (r *ResultService) LatestResult(key string) (*Result, *http.Response, error) {
-	request, err := r.client.NewRequest(http.MethodGet, latestResultURL(key), nil)
+	result, resp, err := r.NumberedResult(key + "-latest")
+	return result, resp, err
+}
+
+// NumberedResult returns the result information for the given plan key which includes the build number of the desired result
+func (r *ResultService) NumberedResult(key string) (*Result, *http.Response, error) {
+	request, err := r.client.NewRequest(http.MethodGet, numberedResultURL(key), nil)
 	if err != nil {
 		return nil, nil, err
 	}
-
-	// query := request.URL.Query()
-	// query.Add("expand", "changes,metadata,plan,vcsRevisions,artifacts,comments,labels,jiraIssues,stages")
-	// request.URL.RawQuery = query.Encode()
 
 	result := Result{}
 	response, err := r.client.Do(request, &result)

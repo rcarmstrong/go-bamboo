@@ -7,8 +7,8 @@ import (
 // -- Results --
 const resultsBase = "result"
 
-func latestResultURL(key string) string {
-	return fmt.Sprintf(resultsBase+"/%s-latest?expand=changes,metadata,plan,vcsRevisions,artifacts,comments,labels,stages", key)
+func numberedResultURL(key string) string {
+	return fmt.Sprintf(resultsBase+"/%s?expand=changes,metadata,plan,vcsRevisions,artifacts,comments,labels,stages", key)
 }
 
 // -- Permissions --
