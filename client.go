@@ -136,6 +136,7 @@ func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Requ
 
 	creds := c.SimpleCreds
 	req.SetBasicAuth(creds.Username, creds.Password)
+	req.Header.Set("Accept", "application/json")
 
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")

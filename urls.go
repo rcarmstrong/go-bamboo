@@ -4,7 +4,16 @@ import (
 	"fmt"
 )
 
+// -- Results --
+const resultsBase = "result"
+
+func numberedResultURL(key string) string {
+	return fmt.Sprintf(resultsBase+"/%s?expand=changes,metadata,plan,vcsRevisions,artifacts,comments,labels,stages", key)
+}
+
 // -- Permissions --
+const permissionBase = "permissions/%s"
+
 // Users
 func userPermissionsListURL(resource, key string) string {
 	if resource == GlobalResource {
