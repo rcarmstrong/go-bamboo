@@ -61,6 +61,47 @@ type DeployStatus struct {
 	StartedDate           int                `json:"startedDate"`
 }
 
+type createDeploymentVersion struct {
+	PlanResultKey   string `json:"planResultKey"`
+	Name            string `json:"name"`
+	NextVersionName string `json:"nextVersionName"`
+}
+
+// DeployVersionResult will have the information for creating a
+// new release/version for bamboo
+type DeployVersionResult struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+}
+
+// CreateDeployVersion will take a deploy project id, plan result, version name and the next version name and create a release.
+func (d *DeployService) CreateDeployVersion(deploymentProjectID int, planResultKey, versionName, nextVersionName string) (*DeployVersionResult, error) {
+
+	createDeployment := &createDeploymentVersion{
+		PlanResultKey:   planResultKey,
+		Name:            versionName,
+		NextVersionName: nextVersionName,
+	}
+
+	request, err := d.client.NewRequest(http.MethodPost, fmt.Sprintf("deploy/project/%d/version", deploymentProjectID), createDeployment)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &DeployVersionResult{}
+
+	response, err := d.client.Do(request, result)
+	if err != nil {
+		return nil, err
+	}
+
+	if response.StatusCode != 200 {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 // ListDeploys lists all deployments
 func (d *DeployService) ListDeploys() (DeploysResponse, error) {
 	request, err := d.client.NewRequest(http.MethodGet, "deploy/project/all", nil)
