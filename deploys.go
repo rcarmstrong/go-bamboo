@@ -79,6 +79,11 @@ type DeployVersionListResult struct {
 	Versions []*DeployVersionResult `json:"versions"`
 }
 
+func newRespErr(response *http.Response, msg string) error {
+	body := []byte{}
+	response.Body.Read(body)
+	return fmt.Errorf("%s: %s - %q", msg, response.Status, body)
+}
 
 // DeployProjectVersions will list existing versions of a deployment project
 func (d *DeployService) DeployProjectVersions(deploymentProjectID int) ([]*DeployVersionResult, error) {
@@ -99,10 +104,7 @@ func (d *DeployService) DeployProjectVersions(deploymentProjectID int) ([]*Deplo
 	}
 
 	if response.StatusCode != 200 {
-		body := []byte{}
-		response.Body.Read(body)
-		pErr := fmt.Errorf("Error getting deploy versions: %s - %q", response.Status, body)
-		return nil, pErr
+		return nil, newRespErr(response, "Error getting deploy versions")
 	}
 
 	return result.Versions, nil
@@ -130,7 +132,7 @@ func (d *DeployService) CreateDeployVersion(deploymentProjectID int, planResultK
 	}
 
 	if response.StatusCode != 200 {
-		return nil, err
+		return nil, newRespErr(response, "Error creating deploy version")
 	}
 
 	return result, nil
@@ -150,7 +152,7 @@ func (d *DeployService) ListDeploys() (DeploysResponse, error) {
 	}
 
 	if response.StatusCode != 200 {
-		return nil, err
+		return nil, newRespErr(response, "Error listing deploys")
 	}
 
 	return deployResp, nil
@@ -170,7 +172,7 @@ func (d *DeployService) DeployEnvironments(id int) (*DeployEnvironment, error) {
 	}
 
 	if response.StatusCode != 200 {
-		return nil, err
+		return nil, newRespErr(response, "Error getting environments")
 	}
 
 	return deployEnvironmentResp, nil
@@ -190,7 +192,7 @@ func (d *DeployService) DeployEnvironmentResults(id int) (*DeployEnvironmentResu
 	}
 
 	if response.StatusCode != 200 {
-		return nil, err
+		return nil, newRespErr(response, "Error getting deploy results")
 	}
 
 	return deployEnvironmentResultsResp, nil
@@ -210,7 +212,7 @@ func (d *DeployService) QueueDeploy(environmentID, versionID int) (*QueueDeployR
 	}
 
 	if response.StatusCode != 200 {
-		return nil, err
+		return nil, newRespErr(response, "Error queueing deploy")
 	}
 
 	return queueDeployRequest, nil
@@ -230,7 +232,7 @@ func (d *DeployService) DeployStatus(id int) (*DeployStatus, error) {
 	}
 
 	if response.StatusCode != 200 {
-		return nil, err
+		return nil, newRespErr(response, "Error getting deploy status")
 	}
 
 	return deployStatus, nil
