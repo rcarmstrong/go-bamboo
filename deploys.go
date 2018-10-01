@@ -74,6 +74,40 @@ type DeployVersionResult struct {
 	Name string `json:"name"`
 }
 
+// DeployVersionListResult stores a list of deployment versions
+type DeployVersionListResult struct {
+	Versions []*DeployVersionResult `json:"versions"`
+}
+
+
+// DeployProjectVersions will list existing versions of a deployment project
+func (d *DeployService) DeployProjectVersions(deploymentProjectID int) ([]*DeployVersionResult, error) {
+	request, err := d.client.NewRequest(http.MethodGet, fmt.Sprintf("deploy/project/%d/versions", deploymentProjectID), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	q := request.URL.Query()
+	// Setting max-results very high to try and get all results
+	q.Set("max-results", "10000")
+	request.URL.RawQuery = q.Encode()
+
+	result := &DeployVersionListResult{}
+	response, err := d.client.Do(request, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	if response.StatusCode != 200 {
+		body := []byte{}
+		response.Body.Read(body)
+		pErr := fmt.Errorf("Error getting deploy versions: %s - %q", response.Status, body)
+		return nil, pErr
+	}
+
+	return result.Versions, nil
+}
+
 // CreateDeployVersion will take a deploy project id, plan result, version name and the next version name and create a release.
 func (d *DeployService) CreateDeployVersion(deploymentProjectID int, planResultKey, versionName, nextVersionName string) (*DeployVersionResult, error) {
 
