@@ -62,4 +62,4 @@ example
 
 ## License ##
 
-This software has been release under the MIT license. Have fun.
+This software has been released under the MIT license. Have fun.
