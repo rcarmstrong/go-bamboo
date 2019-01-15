@@ -14,6 +14,7 @@ go-github requires Go version 1.7 or greater.
 - [Bamboo Rest API Documentation](#bamboo-rest-api-documentation)
 - [Permissions](#permissions)
     * [Project Plan Permissions](#sproject-plan-permissions)
+- [License](#license)
 
 
 
@@ -59,3 +60,6 @@ Returns general info about the API.
 -- TODO --
 example
 
+## License ##
+
+This software has been release under the MIT license. Have fun.
