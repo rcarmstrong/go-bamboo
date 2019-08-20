@@ -1,0 +1,7 @@
+version: "3.7"
+services:
+  bamboo:
+    image: atlassian/bamboo-server
+    ports:
+     - "54663:54663"
+     - "8085:8085"

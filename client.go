@@ -52,6 +52,7 @@ type Client struct {
 	Clone       *CloneService
 	Server      *ServerService
 	Permissions *Permissions
+	Agent       *AgentService
 }
 
 type service struct {
@@ -101,6 +102,7 @@ func NewSimpleClient(httpClient *http.Client, username, password string) *Client
 	c.Clone = (*CloneService)(&c.common)
 	c.Server = (*ServerService)(&c.common)
 	c.Permissions = (*Permissions)(&c.common)
+	c.Agent = (*AgentService)(&c.common)
 	return c
 }
 
