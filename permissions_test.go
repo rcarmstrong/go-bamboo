@@ -1,63 +1,61 @@
-package bamboo_test
-
-import bamboo "github.com/rcarmstrong/go-bamboo"
+package bamboo
 
 var (
-	permissionsTestCases = []bamboo.PermissionsOpts{
-		bamboo.PermissionsOpts{
-			Resource: bamboo.GlobalResource,
+	permissionsTestCases = []PermissionsOpts{
+		PermissionsOpts{
+			Resource: GlobalResource,
 		},
-		bamboo.PermissionsOpts{
-			Resource: bamboo.PlanResource,
+		PermissionsOpts{
+			Resource: PlanResource,
 			Key:      "TEST",
 		},
-		bamboo.PermissionsOpts{
-			Resource: bamboo.RepositoryResource,
+		PermissionsOpts{
+			Resource: RepositoryResource,
 			Key:      "TEST",
 		},
-		bamboo.PermissionsOpts{
-			Resource: bamboo.ProjectResource,
+		PermissionsOpts{
+			Resource: ProjectResource,
 			Key:      "TEST",
 		},
-		bamboo.PermissionsOpts{
-			Resource: bamboo.EnvironmentResource,
+		PermissionsOpts{
+			Resource: EnvironmentResource,
 			Key:      "TEST",
 		},
-		bamboo.PermissionsOpts{
-			Resource: bamboo.ProjectPlanResource,
+		PermissionsOpts{
+			Resource: ProjectPlanResource,
 			Key:      "TEST",
 		},
-		bamboo.PermissionsOpts{
-			Resource: bamboo.DeploymentResource,
+		PermissionsOpts{
+			Resource: DeploymentResource,
 			Key:      "TEST",
 		},
 	}
 
 	allowedPlanAccessLevels = [][]string{
 		// Allowed to view a plan
-		[]string{bamboo.ReadPermission},
+		[]string{ReadPermission},
 		// Allowed to view and edit a plan. Cannot manually start builds.
-		[]string{bamboo.ReadPermission, bamboo.WritePermission},
+		[]string{ReadPermission, WritePermission},
 		// Allowed to view and manually build a plan. Cannot edit the plan.
-		[]string{bamboo.ReadPermission, bamboo.BuildPermission},
+		[]string{ReadPermission, BuildPermission},
 		// Allowed to view the plan and clone the plan for a new plan. Cannot edit or manually build the plan.
-		[]string{bamboo.ReadPermission, bamboo.ClonePermission},
+		[]string{ReadPermission, ClonePermission},
 		// Allowed to view, edit, and build the plan. Cannot clone the plan.
-		[]string{bamboo.ReadPermission, bamboo.WritePermission, bamboo.BuildPermission},
+		[]string{ReadPermission, WritePermission, BuildPermission},
 		// Allowed to view, edit, and clone the plan for a new plan. Cannot manually start builds.
-		[]string{bamboo.ReadPermission, bamboo.WritePermission, bamboo.ClonePermission},
+		[]string{ReadPermission, WritePermission, ClonePermission},
 		// Allowed to view, build, and clone the plan. Cannot edit the plan.
-		[]string{bamboo.ReadPermission, bamboo.BuildPermission, bamboo.ClonePermission},
+		[]string{ReadPermission, BuildPermission, ClonePermission},
 		// Allowed to view, edit, build, and clone the plan.
-		[]string{bamboo.ReadPermission, bamboo.WritePermission, bamboo.BuildPermission, bamboo.ClonePermission},
+		[]string{ReadPermission, WritePermission, BuildPermission, ClonePermission},
 		// Admin access to plan. Once admin access is granted, all other permissions are allowed and cannot be resticted.
-		[]string{bamboo.ReadPermission, bamboo.WritePermission, bamboo.BuildPermission, bamboo.ClonePermission, bamboo.AdminPermission},
+		[]string{ReadPermission, WritePermission, BuildPermission, ClonePermission, AdminPermission},
 	}
 
 	allowedProjectAccessLevels = [][]string{
 		// Allowed to create a plan in a given project
-		[]string{bamboo.CreatePermission},
+		[]string{CreatePermission},
 		// Allowed to create and administer all plans in a project
-		[]string{bamboo.CreatePermission, bamboo.AdminPermission},
+		[]string{CreatePermission, AdminPermission},
 	}
 )

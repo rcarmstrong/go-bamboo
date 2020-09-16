@@ -1,4 +1,4 @@
-package bamboo_test
+package bamboo
 
 import (
 	"encoding/json"
@@ -6,15 +6,13 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
-	bamboo "github.com/rcarmstrong/go-bamboo"
 )
 
 func TestClonePlan(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(clonePlanStub))
 	defer ts.Close()
 
-	client := bamboo.NewSimpleClient(nil, "", "")
+	client := NewSimpleClient(nil, "", "")
 	client.SetURL(ts.URL)
 
 	planClone, resp, err := client.Clone.ClonePlan("CORE-TEST", "CORE-TESTS")
@@ -29,7 +27,7 @@ func TestClonePlan(t *testing.T) {
 
 func clonePlanStub(w http.ResponseWriter, r *http.Request) {
 
-	planClone := bamboo.Plan{
+	planClone := Plan{
 		Key: "CORE-TESTS",
 	}
 

@@ -1,4 +1,4 @@
-package bamboo_test
+package bamboo
 
 import (
 	"encoding/json"
@@ -6,8 +6,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
-	bamboo "github.com/rcarmstrong/go-bamboo"
 )
 
 var (
@@ -19,10 +17,10 @@ func TestAddComment(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(addCommentStub))
 	defer ts.Close()
 
-	client := bamboo.NewSimpleClient(nil, "", "")
+	client := NewSimpleClient(nil, "", "")
 	client.SetURL(ts.URL)
 
-	comment := &bamboo.Comment{
+	comment := &Comment{
 		Content:   testComment,
 		ResultKey: resultCommentKey,
 	}
@@ -38,7 +36,7 @@ func TestAddComment(t *testing.T) {
 }
 
 func addCommentStub(w http.ResponseWriter, r *http.Request) {
-	comment := &bamboo.Comment{}
+	comment := &Comment{}
 	expectedURI := fmt.Sprintf("/rest/api/latest/result/%s/comment.json", resultCommentKey)
 
 	json.NewDecoder(r.Body).Decode(comment)

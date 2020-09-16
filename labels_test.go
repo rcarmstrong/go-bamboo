@@ -1,4 +1,4 @@
-package bamboo_test
+package bamboo
 
 import (
 	"encoding/json"
@@ -6,8 +6,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
-	bamboo "github.com/rcarmstrong/go-bamboo"
 )
 
 var (
@@ -19,10 +17,10 @@ func TestAddLabel(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(addLabelStub))
 	defer ts.Close()
 
-	client := bamboo.NewSimpleClient(nil, "", "")
+	client := NewSimpleClient(nil, "", "")
 	client.SetURL(ts.URL)
 
-	label := &bamboo.Label{
+	label := &Label{
 		Name:      testLabel,
 		ResultKey: resultLabelKey,
 	}
@@ -38,7 +36,7 @@ func TestAddLabel(t *testing.T) {
 }
 
 func addLabelStub(w http.ResponseWriter, r *http.Request) {
-	label := &bamboo.Label{}
+	label := &Label{}
 	expectedURI := fmt.Sprintf("/rest/api/latest/result/%s/label.json", resultLabelKey)
 
 	json.NewDecoder(r.Body).Decode(label)

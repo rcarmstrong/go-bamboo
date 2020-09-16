@@ -1,4 +1,4 @@
-package bamboo_test
+package bamboo
 
 import (
 	"log"
@@ -6,15 +6,13 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
-
-	bamboo "github.com/rcarmstrong/go-bamboo"
 )
 
 func TestGroupPermissionsList(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(groupPermissionsListStub))
 	defer ts.Close()
 
-	client := bamboo.NewSimpleClient(nil, "", "")
+	client := NewSimpleClient(nil, "", "")
 	client.SetURL(ts.URL)
 
 	for _, tc := range permissionsTestCases {
@@ -49,7 +47,7 @@ func TestGroupPermissions(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(groupPermissionsStub))
 	defer ts.Close()
 
-	client := bamboo.NewSimpleClient(nil, "", "")
+	client := NewSimpleClient(nil, "", "")
 	client.SetURL(ts.URL)
 
 	for _, tc := range permissionsTestCases {
@@ -84,7 +82,7 @@ func TestSetGroupPermissions(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(setGroupPermissionsStub))
 	defer ts.Close()
 
-	client := bamboo.NewSimpleClient(nil, "", "")
+	client := NewSimpleClient(nil, "", "")
 	client.SetURL(ts.URL)
 
 	for _, tc := range permissionsTestCases {
@@ -119,7 +117,7 @@ func TestRemoveGroupPermissions(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(removeGroupPermissionsStub))
 	defer ts.Close()
 
-	client := bamboo.NewSimpleClient(nil, "", "")
+	client := NewSimpleClient(nil, "", "")
 	client.SetURL(ts.URL)
 
 	for _, tc := range permissionsTestCases {
@@ -154,7 +152,7 @@ func TestAvailableGroupsPermissionsList(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(availableGroupsPermissionsListStub))
 	defer ts.Close()
 
-	client := bamboo.NewSimpleClient(nil, "", "")
+	client := NewSimpleClient(nil, "", "")
 	client.SetURL(ts.URL)
 
 	for _, tc := range permissionsTestCases {

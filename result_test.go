@@ -1,19 +1,17 @@
-package bamboo_test
+package bamboo
 
 import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
-
-	bamboo "github.com/rcarmstrong/go-bamboo"
 )
 
 func TestLatestResult(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(latestResultStub))
 	defer ts.Close()
 
-	client := bamboo.NewSimpleClient(nil, "", "")
+	client := NewSimpleClient(nil, "", "")
 	client.SetURL(ts.URL)
 
 	_, resp, err := client.Results.LatestResult("CORE-TEST")
@@ -40,7 +38,7 @@ func TestNumberedResult(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(numberedResultStub))
 	defer ts.Close()
 
-	client := bamboo.NewSimpleClient(nil, "", "")
+	client := NewSimpleClient(nil, "", "")
 	client.SetURL(ts.URL)
 
 	_, resp, err := client.Results.NumberedResult("CORE-TEST-1")

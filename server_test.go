@@ -1,4 +1,4 @@
-package bamboo_test
+package bamboo
 
 import (
 	"encoding/json"
@@ -7,13 +7,11 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
-
-	bamboo "github.com/rcarmstrong/go-bamboo"
 )
 
-var serverState = &bamboo.TransitionStateInfo{
-	ServerInfo: bamboo.ServerInfo{
-		State:             bamboo.PausedState,
+var serverState = &TransitionStateInfo{
+	ServerInfo: ServerInfo{
+		State:             PausedState,
 		ReindexInProgress: false,
 	},
 	SetByUser: "test",
@@ -23,17 +21,17 @@ func TestStateTransitions(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(transitionServerStateStub))
 	defer ts.Close()
 
-	client := bamboo.NewSimpleClient(nil, "", "")
+	client := NewSimpleClient(nil, "", "")
 	client.SetURL(ts.URL)
 
 	var testCases = []struct {
 		expectedState string
-		function      func() (*bamboo.TransitionStateInfo, *http.Response, error)
+		function      func() (*TransitionStateInfo, *http.Response, error)
 	}{
-		{bamboo.PausedState, client.Server.Pause},
-		{bamboo.RunningState, client.Server.Resume},
-		{bamboo.PreparingForRestartState, client.Server.PrepareForRestart},
-		{bamboo.ReadyForRestartState, client.Server.Resume},
+		{PausedState, client.Server.Pause},
+		{RunningState, client.Server.Resume},
+		{PreparingForRestartState, client.Server.PrepareForRestart},
+		{ReadyForRestartState, client.Server.Resume},
 	}
 
 	for _, c := range testCases {
@@ -52,12 +50,12 @@ func TestReindex(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(reindexServerStateStub))
 	defer ts.Close()
 
-	client := bamboo.NewSimpleClient(nil, "", "")
+	client := NewSimpleClient(nil, "", "")
 	client.SetURL(ts.URL)
 
 	var testCases = []struct {
 		expected bool
-		function func() (*bamboo.ReindexState, *http.Response, error)
+		function func() (*ReindexState, *http.Response, error)
 	}{
 		{true, client.Server.Reindex},
 		{true, client.Server.ReindexStatus},
@@ -80,15 +78,15 @@ func transitionServerStateStub(w http.ResponseWriter, r *http.Request) {
 
 	switch method {
 	case "pause":
-		serverState.State = bamboo.PausedState
+		serverState.State = PausedState
 	case "resume":
-		if serverState.State == bamboo.PausedState {
-			serverState.State = bamboo.RunningState
+		if serverState.State == PausedState {
+			serverState.State = RunningState
 		} else {
-			serverState.State = bamboo.ReadyForRestartState
+			serverState.State = ReadyForRestartState
 		}
 	case "prepareForRestart":
-		serverState.State = bamboo.PreparingForRestartState
+		serverState.State = PreparingForRestartState
 	default:
 		serverState.State = "Unknown"
 	}
@@ -102,7 +100,7 @@ func transitionServerStateStub(w http.ResponseWriter, r *http.Request) {
 }
 
 func reindexServerStateStub(w http.ResponseWriter, r *http.Request) {
-	resp := bamboo.ReindexState{
+	resp := ReindexState{
 		ReindexInProgress: true,
 		ReindexPending:    true,
 	}
