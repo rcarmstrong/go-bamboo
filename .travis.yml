@@ -2,3 +2,24 @@ language: go
 
 go:
   - "1.9.x"
+  - tip
+
+before_install:
+  - go get -t -v ./...
+
+script:
+  - go get -u golang.org/x/lint/golint
+  - go get golang.org/x/tools/cmd/cover
+  - go get github.com/mattn/goveralls
+  - $GOPATH/bin/golint -set_exit_status .
+  - go test -v -covermode=count -coverprofile=coverage.out
+  - $GOPATH/bin/goveralls -coverprofile=coverage.out -service=travis-ci -repotoken $COVERALLS_TOKEN
+
+after_success:
+
+cache:
+  directories:
+    - $HOME/.cache/go-build
+    - $HOME/gopath/pkg/mod
+
+
