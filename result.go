@@ -8,6 +8,19 @@ import (
 // ResultService handles communication with build results
 type ResultService service
 
+// ResultsResponse encapsulates the information from
+// requesting result information
+type ResultsResponse struct {
+	*ResourceMetadata
+	Results *Results `json:"results"`
+}
+
+// Results is the collection of results
+type Results struct {
+	*CollectionMetadata
+	ResultList []*Result `json:"result"`
+}
+
 // Result represents all the information associated with a build result
 type Result struct {
 	ChangeSet              `json:"changes"`
@@ -71,4 +84,24 @@ func (r *ResultService) NumberedResult(key string) (*Result, *http.Response, err
 	}
 
 	return &result, response, err
+}
+
+// NumberedResult returns the result information for the given plan key which includes the build number of the desired result
+func (r *ResultService) ListResults(key string) ([]*Result, *http.Response, error) {
+	request, err := r.client.NewRequest(http.MethodGet, listResultsURL(key), nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	result := ResultsResponse{}
+	response, err := r.client.Do(request, &result)
+	if err != nil {
+		return nil, response, err
+	}
+
+	if response.StatusCode != 200 {
+		return nil, response, &simpleError{fmt.Sprintf("API returned unexpected status code %d", response.StatusCode)}
+	}
+
+	return result.Results.ResultList, response, err
 }
