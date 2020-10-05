@@ -64,7 +64,7 @@ func (p *ProjectService) ProjectInfo(projectKey string) (*ProjectInformation, *h
 
 	if response.StatusCode != http.StatusOK {
 		return nil, response,
-		errors.New("Getting Project Information returned: " + response.Status)
+			errors.New("Getting Project Information returned: " + response.Status)
 	}
 
 	return &projectInfo, response, nil
