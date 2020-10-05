@@ -1,6 +1,7 @@
 package bamboo
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 )
@@ -58,7 +59,12 @@ func (p *ProjectService) ProjectInfo(projectKey string) (*ProjectInformation, *h
 	projectInfo := ProjectInformation{}
 	response, err := p.client.Do(request, &projectInfo)
 	if err != nil {
-		return nil, nil, err
+		return nil, response, err
+	}
+
+	if response.StatusCode != http.StatusOK {
+		return nil, response,
+		errors.New("Getting Project Information returned: " + response.Status)
 	}
 
 	return &projectInfo, response, nil
@@ -87,6 +93,11 @@ func (p *ProjectService) ProjectPlans(projectKey string) ([]*Plan, *http.Respons
 	response, err := p.client.Do(request, &projectResponse)
 	if err != nil {
 		return nil, nil, err
+	}
+
+	if response.StatusCode != http.StatusOK {
+		return nil, response,
+			errors.New("Getting Project Plans returned: " + response.Status)
 	}
 
 	return projectResponse.Plans.PlanList, response, nil
