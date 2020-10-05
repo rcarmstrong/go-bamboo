@@ -117,7 +117,7 @@ func TestListProjects2(t *testing.T) {
 	assert.NotNil(t, response)
 	assert.Equal(t, http.StatusOK, response.StatusCode)
 	assert.NotNil(t, result)
-	//assert.Equal(t, 1, len(result))
+	assert.Equal(t, 1, len(result))
 }
 
 func listProjectsStub(w http.ResponseWriter, r *http.Request) {
