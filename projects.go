@@ -59,7 +59,7 @@ func (p *ProjectService) ProjectInfo(projectKey string) (*ProjectInformation, *h
 	projectInfo := ProjectInformation{}
 	response, err := p.client.Do(request, &projectInfo)
 	if err != nil {
-		return nil, response, err
+		return nil, nil, err
 	}
 
 	if response.StatusCode != http.StatusOK {
