@@ -11,6 +11,10 @@ func numberedResultURL(key string) string {
 	return fmt.Sprintf(resultsBase+"/%s?expand=changes,metadata,plan,vcsRevisions,artifacts,comments,labels,stages", key)
 }
 
+func listResultsURL(key string) string {
+	return fmt.Sprintf(resultsBase+"/%s?expand=results.result.artifacts,results.result.comments,results.result.labels,results.result.stages", key)
+}
+
 // -- Permissions --
 const permissionBase = "permissions/%s"
 
