@@ -1,13 +1,12 @@
-package bamboo_test
+package test
 
 import (
+	"github.com/lotos2512/bamboo"
 	"log"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
-
-	bamboo "github.com/rcarmstrong/go-bamboo"
 )
 
 func TestGroupPermissionsList(t *testing.T) {

@@ -1,13 +1,12 @@
-package bamboo_test
+package test
 
 import (
 	"encoding/json"
+	"github.com/lotos2512/bamboo"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
-	"github.com/rcarmstrong/go-bamboo"
 )
 
 func TestProjectInfo(t *testing.T) {

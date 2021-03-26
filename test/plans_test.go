@@ -1,12 +1,11 @@
-package bamboo_test
+package test
 
 import (
+	"github.com/lotos2512/bamboo"
+	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"github.com/stretchr/testify/assert"
-
-	bamboo "github.com/rcarmstrong/go-bamboo"
 )
 
 func TestListPlans(t *testing.T) {

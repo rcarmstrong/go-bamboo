@@ -1,7 +1,7 @@
 // package bamboo provides a client to communicate with Atlassian Bamboo CI Server API
 //
 // Usage:
-//  import bamboo "github.com/rcarmstrong/go-bamboo"
+//  import
 //
 // A Bamboo client exposes various services that control access to different parts of
 // the Bamboo API. For example:
@@ -28,7 +28,6 @@ import (
 )
 
 const (
-	libraryVersion = "1.0"
 	defaultBaseURL = "http://localhost:8085/rest/api/latest/"
 )
 
@@ -52,6 +51,7 @@ type Client struct {
 	Clone       *CloneService
 	Server      *ServerService
 	Permissions *Permissions
+	Encryption  *Encryption
 }
 
 type service struct {
@@ -101,6 +101,7 @@ func NewSimpleClient(httpClient *http.Client, username, password string) *Client
 	c.Clone = (*CloneService)(&c.common)
 	c.Server = (*ServerService)(&c.common)
 	c.Permissions = (*Permissions)(&c.common)
+	c.Encryption = (*Encryption)(&c.common)
 	return c
 }
 
@@ -165,7 +166,7 @@ func (c *Client) Do(req *http.Request, v interface{}) (*http.Response, error) {
 
 	if v != nil {
 		if w, ok := v.(io.Writer); ok {
-			io.Copy(w, resp.Body)
+			io.Copy(w, resp.Body) //nolint:errcheck
 		} else {
 			err = json.NewDecoder(resp.Body).Decode(v)
 			if err == io.EOF {
