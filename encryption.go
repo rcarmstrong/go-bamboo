@@ -1,18 +1,24 @@
 package bamboo
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 )
 
 type Encryption service
 
-type EncryptionResut struct {
+type EncryptionResult struct {
 	EncryptedText string `json:"encryptedText"`
 }
 
-func (s *Encryption) Encrypt(text string) (encryptionResult EncryptionResut, r *http.Response, err error) {
-	request, err := s.client.NewRequest(http.MethodPost, "encrypt", `{text: "`+text+`"}`)
+type EncryptionRequest struct {
+	Text string `text:"text"`
+}
+
+func (s *Encryption) Encrypt(requestParams EncryptionRequest) (encryptionResult EncryptionResult, r *http.Response, err error) {
+	data, _ := json.Marshal(requestParams)
+	request, err := s.client.NewRequest(http.MethodPost, "encrypt", data)
 	if err != nil {
 		return
 	}
