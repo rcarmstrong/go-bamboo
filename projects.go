@@ -37,6 +37,13 @@ type ProjectInformation struct {
 	NumPlans    *ProjectPlansInformation `json:"plans"`
 }
 
+type Repository struct {
+	ID         uint32 `json:"id"`
+	Name       string `json:"name"`
+	Url        string `json:"url"`
+	RssEnabled bool   `json:"rssEnabled"`
+}
+
 // ProjectPlansInformation holds the number of plans in a project
 type ProjectPlansInformation struct {
 	Size int `json:"size,omitempty"`
@@ -76,7 +83,7 @@ func (p *ProjectService) ProjectPlans(projectKey string) ([]*Plan, *http.Respons
 	if !emptyStrings(projectKey) {
 		u = fmt.Sprintf("project/%s.json", projectKey)
 	} else {
-		return nil, nil, &simpleError{fmt.Sprintf("Project key cannot be an empty string")}
+		return nil, nil, &simpleError{"Project key cannot be an empty string"}
 	}
 
 	request, err := p.client.NewRequest(http.MethodGet, u, nil)
@@ -101,6 +108,36 @@ func (p *ProjectService) ProjectPlans(projectKey string) ([]*Plan, *http.Respons
 	}
 
 	return projectResponse.Plans.PlanList, response, nil
+}
+
+func (p *ProjectService) ProjectRepository(projectKey string) (repos []Repository, r *http.Response, err error) {
+	var u string
+	if !emptyStrings(projectKey) {
+		u = fmt.Sprintf("project/%s/repository", projectKey)
+	} else {
+		return nil, nil, &simpleError{"Project key cannot be an empty string"}
+	}
+
+	request, err := p.client.NewRequest(http.MethodGet, u, nil)
+	if err != nil {
+		return
+	}
+
+	values := request.URL.Query()
+	values.Set("expand", "plans")
+	values.Set("max-result", "1000")
+	request.URL.RawQuery = values.Encode()
+
+	response, err := p.client.Do(request, &repos)
+	if err != nil {
+		return
+	}
+	if response.StatusCode != http.StatusOK {
+		return nil, response,
+			errors.New("Getting Project Plans returned: " + response.Status)
+	}
+
+	return repos, response, nil
 }
 
 // ListProjects lists all projects
