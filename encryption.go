@@ -13,7 +13,7 @@ type EncryptionResult struct {
 }
 
 type EncryptionRequest struct {
-	Text string `text:"text"`
+	Text string `json:"text"`
 }
 
 func (s *Encryption) Encrypt(requestParams EncryptionRequest) (encryptionResult EncryptionResult, r *http.Response, err error) {
