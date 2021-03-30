@@ -52,6 +52,7 @@ type Client struct {
 	Server      *ServerService
 	Permissions *Permissions
 	Encryption  *Encryption
+	Repository  *RepositoryService
 }
 
 type service struct {
@@ -102,6 +103,7 @@ func NewSimpleClient(httpClient *http.Client, username, password string) *Client
 	c.Server = (*ServerService)(&c.common)
 	c.Permissions = (*Permissions)(&c.common)
 	c.Encryption = (*Encryption)(&c.common)
+	c.Repository = (*RepositoryService)(&c.common)
 	return c
 }
 
@@ -152,7 +154,6 @@ func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Requ
 // first decode it. If rate limit is exceeded and reset time is in the future,
 // Do returns *RateLimitError immediately without making a network API call.
 func (c *Client) Do(req *http.Request, v interface{}) (*http.Response, error) {
-
 	resp, err := c.client.Do(req)
 	if err != nil {
 		return nil, err
