@@ -1,7 +1,6 @@
 package bamboo
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 )
@@ -132,7 +131,6 @@ type UpdateDeploymentProjectRequest struct {
 
 // CreateDeployVersion will take a deploy project id, plan result, version name and the next version name and create a release.
 func (d *DeployService) CreateDeployVersion(deploymentProjectID int, planResultKey, versionName, nextVersionName string) (*DeployVersionResult, error) {
-
 	createDeployment := &createDeploymentVersion{
 		PlanResultKey:   planResultKey,
 		Name:            versionName,
@@ -159,8 +157,7 @@ func (d *DeployService) CreateDeployVersion(deploymentProjectID int, planResultK
 }
 
 func (d *DeployService) CreateDeploymentProject(deploymentProjectRequest CreateDeploymentProjectRequest) (dp DeploymentProject, err error) {
-	data, _ := json.Marshal(deploymentProjectRequest)
-	request, err := d.client.NewRequest(http.MethodPut, "deploy/project", data)
+	request, err := d.client.NewRequest(http.MethodPut, "deploy/project", deploymentProjectRequest)
 	if err != nil {
 		return
 	}
@@ -178,8 +175,7 @@ func (d *DeployService) CreateDeploymentProject(deploymentProjectRequest CreateD
 }
 
 func (d *DeployService) UpdateDeploymentProject(deploymentProjectRequest UpdateDeploymentProjectRequest) (dp DeploymentProject, err error) {
-	data, _ := json.Marshal(deploymentProjectRequest)
-	request, err := d.client.NewRequest(http.MethodPost, fmt.Sprintf("deploy/project/%d", deploymentProjectRequest.ID), data)
+	request, err := d.client.NewRequest(http.MethodPost, fmt.Sprintf("deploy/project/%d", deploymentProjectRequest.ID), deploymentProjectRequest)
 	if err != nil {
 		return
 	}
@@ -190,7 +186,7 @@ func (d *DeployService) UpdateDeploymentProject(deploymentProjectRequest UpdateD
 	}
 
 	if response.StatusCode != http.StatusOK {
-		return dp, newRespErr(response, "Error create deployment project")
+		return dp, newRespErr(response, "Error update deployment project")
 	}
 
 	return

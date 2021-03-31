@@ -33,9 +33,9 @@ const (
 
 // Client manages the communication with the Bamboo API
 type Client struct {
-	client      *http.Client // HTTP client used to communicate with the API
-	BaseURL     *url.URL
-	SimpleCreds *SimpleCredentials // User credentials
+	client            *http.Client // HTTP client used to communicate with the API
+	BaseURL           *url.URL
+	SimpleCredentials *SimpleCredentials // User credentials
 
 	common service // Reuse a single struct instead of allocating one for each service on the heap.
 
@@ -89,7 +89,7 @@ func NewSimpleClient(httpClient *http.Client, username, password string) *Client
 	}
 	baseURL, _ := url.Parse(defaultBaseURL)
 
-	c := &Client{client: httpClient, BaseURL: baseURL, SimpleCreds: &SimpleCredentials{Username: username, Password: password}}
+	c := &Client{client: httpClient, BaseURL: baseURL, SimpleCredentials: &SimpleCredentials{Username: username, Password: password}}
 	c.common.client = c
 	c.Plans = (*PlanService)(&c.common)
 	c.Deploys = (*DeployService)(&c.common)
@@ -137,9 +137,11 @@ func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Requ
 		return nil, err
 	}
 
-	creds := c.SimpleCreds
+	creds := c.SimpleCredentials
 	req.SetBasicAuth(creds.Username, creds.Password)
-	req.Header.Set("Accept", "application/json")
+
+	req.Header.Set("Accept", "application/json, text/plain, */*")
+	req.Header.Set("Content-Type", "application/json;charset=utf-8")
 
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
@@ -160,14 +162,16 @@ func (c *Client) Do(req *http.Request, v interface{}) (*http.Response, error) {
 	}
 
 	defer func() {
-		// Drain up to 512 bytes and close the body to let the Transport reuse the connection
-		io.CopyN(ioutil.Discard, resp.Body, 512)
-		resp.Body.Close()
+		if resp.StatusCode == http.StatusOK {
+			// Drain up to 512 bytes and close the body to let the Transport reuse the connection
+			_, _ = io.CopyN(ioutil.Discard, resp.Body, 512)
+			_ = resp.Body.Close()
+		}
 	}()
 
 	if v != nil {
 		if w, ok := v.(io.Writer); ok {
-			io.Copy(w, resp.Body) //nolint:errcheck
+			_, _ = io.Copy(w, resp.Body)
 		} else {
 			err = json.NewDecoder(resp.Body).Decode(v)
 			if err == io.EOF {

@@ -9,8 +9,8 @@ import (
 type RepositoryService service
 
 type IRepositoryService interface {
-	ListRepository(projectKey string) (repos []Repository, r *http.Response, err error)
-	RepositoryScanStatus(params ScanStatusParams) (statusResponse ScanStatusResponse, r *http.Response, err error)
+	ListRepository(projectKey string, params ListRepositoryParams) (repos []Repository, err error)
+	RepositoryScanStatus(params ScanStatusParams) (statusResponse ScanStatusResponse, err error)
 }
 
 type Repository struct {
@@ -18,6 +18,10 @@ type Repository struct {
 	Name       string `json:"name"`
 	Url        string `json:"url"`
 	RssEnabled bool   `json:"rssEnabled"`
+}
+
+type ListRepositoryParams struct {
+	RepositoryName string
 }
 
 type ScanStatusParams struct {
@@ -47,12 +51,12 @@ type SpecsLog struct {
 	RelativeExecutionDate string          `json:"relativeExecutionDate"`
 }
 
-func (p *RepositoryService) ListRepository(projectKey string) (repos []Repository, r *http.Response, err error) {
+func (p *RepositoryService) ListRepository(projectKey string, params ListRepositoryParams) (repos []Repository, err error) {
 	var u string
 	if !emptyStrings(projectKey) {
 		u = fmt.Sprintf("project/%s/repository", projectKey)
 	} else {
-		return nil, nil, &simpleError{"Project key cannot be an empty string"}
+		return nil, &simpleError{"Project key cannot be an empty string"}
 	}
 
 	request, err := p.client.NewRequest(http.MethodGet, u, nil)
@@ -60,29 +64,34 @@ func (p *RepositoryService) ListRepository(projectKey string) (repos []Repositor
 		return
 	}
 
-	values := request.URL.Query()
-	values.Set("expand", "plans")
-	values.Set("max-result", "1000")
-	request.URL.RawQuery = values.Encode()
-
 	response, err := p.client.Do(request, &repos)
 	if err != nil {
 		return
 	}
 	if response.StatusCode != http.StatusOK {
-		return nil, response,
+		return nil,
 			errors.New("Getting Project Plans returned: " + response.Status)
 	}
 
-	return repos, response, nil
+	// filter
+	if params.RepositoryName != "" {
+		for i := range repos {
+			if repos[i].Name == params.RepositoryName {
+				repos = []Repository{repos[i]}
+				break
+			}
+		}
+	}
+
+	return repos, nil
 }
 
-func (p *RepositoryService) RepositoryScanStatus(params ScanStatusParams) (statusResponse ScanStatusResponse, r *http.Response, err error) {
+func (p *RepositoryService) RepositoryScanStatus(params ScanStatusParams) (statusResponse ScanStatusResponse, err error) {
 	var u string
 	if params.ID != 0 {
 		u = fmt.Sprintf("repository/%d/scan/status", params.ID)
 	} else {
-		return statusResponse, nil, &simpleError{"ID must be set"}
+		return statusResponse, &simpleError{"ID must be set"}
 	}
 
 	request, err := p.client.NewRequest(http.MethodGet, u, nil)
@@ -100,8 +109,8 @@ func (p *RepositoryService) RepositoryScanStatus(params ScanStatusParams) (statu
 		return
 	}
 	if response.StatusCode != http.StatusOK {
-		return statusResponse, response, errors.New("Getting Project Plans returned: " + response.Status)
+		return statusResponse, errors.New("Getting Project Plans returned: " + response.Status)
 	}
 
-	return statusResponse, response, nil
+	return statusResponse, nil
 }
