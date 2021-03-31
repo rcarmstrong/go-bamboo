@@ -161,15 +161,16 @@ func (c *Client) Do(req *http.Request, v interface{}) (*http.Response, error) {
 		return nil, err
 	}
 
+	successes := resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusCreated
+
 	defer func() {
-		if resp.StatusCode == http.StatusOK {
+		if successes {
 			// Drain up to 512 bytes and close the body to let the Transport reuse the connection
 			_, _ = io.CopyN(ioutil.Discard, resp.Body, 512)
 			_ = resp.Body.Close()
 		}
 	}()
-
-	if v != nil {
+	if v != nil && successes {
 		if w, ok := v.(io.Writer); ok {
 			_, _ = io.Copy(w, resp.Body)
 		} else {

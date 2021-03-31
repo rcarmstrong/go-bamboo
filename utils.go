@@ -23,11 +23,11 @@ func newRespErr(response *http.Response, msg string) error {
 		_ = response.Body.Close()
 	}()
 
-	data, err := ioutil.ReadAll(response.Body)
+	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		return fmt.Errorf("Read body err: %v", err)
+		return err
 	}
-	return fmt.Errorf("%s: %s - %q", msg, response.Status, data)
+	return fmt.Errorf("%s: %s - %q", msg, response.Status, body)
 }
 
 // Pagination used to specify the start and limit indexes of a paginated API resource

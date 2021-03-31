@@ -11,12 +11,18 @@ type DeployService service
 type IDeployService interface {
 	CreateDeployVersion(deploymentProjectID int, planResultKey, versionName, nextVersionName string) (*DeployVersionResult, error)
 	CreateDeploymentProject(deploymentProjectRequest CreateDeploymentProjectRequest) (dp DeploymentProject, err error)
-	UpdateDeploymentProject(deploymentProjectRequest UpdateDeploymentProjectRequest) (dp DeploymentProject, err error)
+	UpdateDeploymentProject(projectID uint, deploymentProjectRequest UpdateDeploymentProjectRequest) (dp DeploymentProject, err error)
 	ListDeploys() (DeploysResponse, error)
 	DeployEnvironments(id int) (*DeployEnvironment, error)
 	DeployEnvironmentResults(id int) (*DeployEnvironmentResults, error)
 	QueueDeploy(environmentID, versionID int) (*QueueDeployRequest, error)
 	DeployStatus(id int) (*DeployStatus, error)
+	AddRepository(projectID uint, params AddRepositoryRequest) (r Repository, err error)
+	DeleteRepository(projectID, repoID uint) (r Repository, err error)
+}
+
+type AddRepositoryRequest struct {
+	ID uint `json:"id"`
 }
 
 // DeployResponse is the REST response from the server
@@ -123,7 +129,6 @@ type CreateDeploymentProjectRequest struct {
 }
 
 type UpdateDeploymentProjectRequest struct {
-	ID          uint
 	Name        string  `json:"name"`
 	PlanKey     PlanKey `json:"planKey"`
 	Description string  `json:"description"`
@@ -174,8 +179,8 @@ func (d *DeployService) CreateDeploymentProject(deploymentProjectRequest CreateD
 	return
 }
 
-func (d *DeployService) UpdateDeploymentProject(deploymentProjectRequest UpdateDeploymentProjectRequest) (dp DeploymentProject, err error) {
-	request, err := d.client.NewRequest(http.MethodPost, fmt.Sprintf("deploy/project/%d", deploymentProjectRequest.ID), deploymentProjectRequest)
+func (d *DeployService) UpdateDeploymentProject(projectID uint, deploymentProjectRequest UpdateDeploymentProjectRequest) (dp DeploymentProject, err error) {
+	request, err := d.client.NewRequest(http.MethodPost, fmt.Sprintf("deploy/project/%d", projectID), deploymentProjectRequest)
 	if err != nil {
 		return
 	}
@@ -187,6 +192,42 @@ func (d *DeployService) UpdateDeploymentProject(deploymentProjectRequest UpdateD
 
 	if response.StatusCode != http.StatusOK {
 		return dp, newRespErr(response, "Error update deployment project")
+	}
+
+	return
+}
+
+func (d *DeployService) AddRepository(projectID uint, params AddRepositoryRequest) (r Repository, err error) {
+	request, err := d.client.NewRequest(http.MethodPost, fmt.Sprintf("deploy/project/%d/repository", projectID), params)
+	if err != nil {
+		return
+	}
+
+	response, err := d.client.Do(request, &r)
+	if err != nil {
+		return
+	}
+
+	if response.StatusCode != http.StatusCreated {
+		return r, newRespErr(response, "Error add repository to project")
+	}
+
+	return
+}
+
+func (d *DeployService) DeleteRepository(projectID, repoID uint) (r Repository, err error) {
+	request, err := d.client.NewRequest(http.MethodDelete, fmt.Sprintf("deploy/project/%d/repository/%d", projectID, repoID), nil)
+	if err != nil {
+		return
+	}
+
+	response, err := d.client.Do(request, &r)
+	if err != nil {
+		return
+	}
+
+	if response.StatusCode != http.StatusOK {
+		return r, newRespErr(response, "Error delete repository from project")
 	}
 
 	return
