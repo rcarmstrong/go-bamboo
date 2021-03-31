@@ -9,6 +9,12 @@ import (
 // ProjectService handles communication with the project related methods
 type ProjectService service
 
+type IProjectService interface {
+	ProjectInfo(projectKey string) (*ProjectInformation, *http.Response, error)
+	ProjectPlans(projectKey string) ([]*Plan, *http.Response, error)
+	ListProjects() ([]*Project, *http.Response, error)
+}
+
 // ProjectResponse the REST response from the server
 type ProjectResponse struct {
 	*ResourceMetadata

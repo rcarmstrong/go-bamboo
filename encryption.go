@@ -8,6 +8,10 @@ import (
 
 type Encryption service
 
+type IEncryption interface {
+	Encrypt(requestParams EncryptionRequest) (encryptionResult EncryptionResult, err error)
+}
+
 type EncryptionResult struct {
 	EncryptedText string `json:"encryptedText"`
 }
@@ -16,7 +20,7 @@ type EncryptionRequest struct {
 	Text string `json:"text"`
 }
 
-func (s *Encryption) Encrypt(requestParams EncryptionRequest) (encryptionResult EncryptionResult, r *http.Response, err error) {
+func (s *Encryption) Encrypt(requestParams EncryptionRequest) (encryptionResult EncryptionResult, err error) {
 	data, _ := json.Marshal(requestParams)
 	request, err := s.client.NewRequest(http.MethodPost, "encrypt", data)
 	if err != nil {
@@ -29,7 +33,7 @@ func (s *Encryption) Encrypt(requestParams EncryptionRequest) (encryptionResult 
 	}
 
 	if !(response.StatusCode == 200) {
-		return encryptionResult, response, &simpleError{fmt.Sprintf("Server pause returned %d", response.StatusCode)}
+		return encryptionResult, &simpleError{fmt.Sprintf("Server pause returned %d", response.StatusCode)}
 	}
 
 	return

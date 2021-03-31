@@ -8,8 +8,13 @@ import (
 
 type RepositoryService service
 
+type IRepositoryService interface {
+	ListRepository(projectKey string) (repos []Repository, r *http.Response, err error)
+	RepositoryScanStatus(params ScanStatusParams) (statusResponse ScanStatusResponse, r *http.Response, err error)
+}
+
 type Repository struct {
-	ID         uint `json:"id"`
+	ID         uint   `json:"id"`
 	Name       string `json:"name"`
 	Url        string `json:"url"`
 	RssEnabled bool   `json:"rssEnabled"`
@@ -34,9 +39,9 @@ var (
 )
 
 type SpecsLog struct {
-	VcsLocationId         uint          `json:"vcsLocationId"`
+	VcsLocationId         uint            `json:"vcsLocationId"`
 	Revision              string          `json:"revision"`
-	SpecsExecutionDate    uint          `json:"specsExecutionDate"`
+	SpecsExecutionDate    uint            `json:"specsExecutionDate"`
 	LogFilename           string          `json:"logFilename"`
 	SpecImportState       SpecImportState `json:"specImportState"`
 	RelativeExecutionDate string          `json:"relativeExecutionDate"`

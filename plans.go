@@ -9,6 +9,16 @@ import (
 // PlanService handles communication with the plan related methods
 type PlanService service
 
+type IPlanService interface {
+	CreatePlanBranch(planKey, branchName string, options *PlanCreateBranchOptions) (bool, *http.Response, error)
+	NumberOfPlans() (int, *http.Response, error)
+	ListPlans() ([]*Plan, *http.Response, error)
+	ListPlanKeys() ([]string, *http.Response, error)
+	ListPlanNames() ([]string, *http.Response, error)
+	PlanNameMap() (map[string]string, *http.Response, error)
+	DisablePlan(planKey string) (*http.Response, error)
+}
+
 // PlanCreateBranchOptions specifies the optional parameters
 // for the CreatePlanBranch method
 type PlanCreateBranchOptions struct {

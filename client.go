@@ -40,19 +40,19 @@ type Client struct {
 	common service // Reuse a single struct instead of allocating one for each service on the heap.
 
 	// Services used for talking to different parts of the Bamboo API
-	Info        *InfoService
-	Plans       *PlanService
-	Deploys     *DeployService
-	Branches    *PlanBranchService
-	Projects    *ProjectService
-	Results     *ResultService
-	Comments    *CommentService
-	Labels      *LabelService
-	Clone       *CloneService
-	Server      *ServerService
+	Info        IInfoService
+	Plans       IPlanService
+	Deploys     IDeployService
+	Branches    IPlanBranchService
+	Projects    IProjectService
+	Results     IResultService
+	Comments    ICommentService
+	Labels      ILabelService
+	Clone       ICloneService
+	Server      IServerService
 	Permissions *Permissions
-	Encryption  *Encryption
-	Repository  *RepositoryService
+	Encryption  IEncryption
+	Repository  IRepositoryService
 }
 
 type service struct {

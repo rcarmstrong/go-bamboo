@@ -23,6 +23,14 @@ const PreparingForRestartState string = "PREPARING_FOR_RESTART"
 // ServerService exposes server operations
 type ServerService service
 
+type IServerService interface {
+	Pause() (*TransitionStateInfo, *http.Response, error)
+	Resume() (*TransitionStateInfo, *http.Response, error)
+	PrepareForRestart() (*TransitionStateInfo, *http.Response, error)
+	Reindex() (*ReindexState, *http.Response, error)
+	ReindexStatus() (*ReindexState, *http.Response, error)
+}
+
 // TransitionStateInfo represents the server state response after a server operation is preformed.
 type TransitionStateInfo struct {
 	ServerInfo
