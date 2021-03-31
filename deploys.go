@@ -1,6 +1,7 @@
 package bamboo
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 )
@@ -79,6 +80,31 @@ type DeployVersionListResult struct {
 	Versions []*DeployVersionResult `json:"versions"`
 }
 
+type CreateDeploymentProjectRequest struct {
+	Name         string  `json:"name"`
+	PlanKey      PlanKey `json:"planKey"`
+	Description  string  `json:"description"`
+	PublicAccess bool    `json:"publicAccess"`
+}
+
+type UpdateDeploymentProjectRequest struct {
+	ID          uint
+	Name        string  `json:"name"`
+	PlanKey     PlanKey `json:"planKey"`
+	Description string  `json:"description"`
+}
+
+type DeploymentProject struct {
+	ID                     uint          `json:"id"`
+	Oid                    string        `json:"oid"`
+	Key                    PlanKey       `json:"key"`
+	Name                   string        `json:"name"`
+	PlanKey                PlanKey       `json:"planKey"`
+	Description            string        `json:"description"`
+	Environments           []Environment `json:"environments"`
+	RepositorySpecsManaged bool          `json:"repositorySpecsManaged"`
+}
+
 // CreateDeployVersion will take a deploy project id, plan result, version name and the next version name and create a release.
 func (d *DeployService) CreateDeployVersion(deploymentProjectID int, planResultKey, versionName, nextVersionName string) (*DeployVersionResult, error) {
 
@@ -105,6 +131,44 @@ func (d *DeployService) CreateDeployVersion(deploymentProjectID int, planResultK
 	}
 
 	return result, nil
+}
+
+func (d *DeployService) CreateDeploymentProject(deploymentProjectRequest CreateDeploymentProjectRequest) (dp DeploymentProject, err error) {
+	data, _ := json.Marshal(deploymentProjectRequest)
+	request, err := d.client.NewRequest(http.MethodPut, "deploy/project", data)
+	if err != nil {
+		return
+	}
+
+	response, err := d.client.Do(request, &dp)
+	if err != nil {
+		return
+	}
+
+	if response.StatusCode != http.StatusOK {
+		return dp, newRespErr(response, "Error create deployment project")
+	}
+
+	return
+}
+
+func (d *DeployService) UpdateDeploymentProject(deploymentProjectRequest UpdateDeploymentProjectRequest) (dp DeploymentProject, err error) {
+	data, _ := json.Marshal(deploymentProjectRequest)
+	request, err := d.client.NewRequest(http.MethodPost, fmt.Sprintf("deploy/project/%d", deploymentProjectRequest.ID), data)
+	if err != nil {
+		return
+	}
+
+	response, err := d.client.Do(request, &dp)
+	if err != nil {
+		return
+	}
+
+	if response.StatusCode != http.StatusOK {
+		return dp, newRespErr(response, "Error create deployment project")
+	}
+
+	return
 }
 
 // ListDeploys lists all deployments
