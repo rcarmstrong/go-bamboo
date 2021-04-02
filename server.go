@@ -23,6 +23,14 @@ const PreparingForRestartState string = "PREPARING_FOR_RESTART"
 // ServerService exposes server operations
 type ServerService service
 
+type IServerService interface {
+	Pause() (*TransitionStateInfo, *http.Response, error)
+	Resume() (*TransitionStateInfo, *http.Response, error)
+	PrepareForRestart() (*TransitionStateInfo, *http.Response, error)
+	Reindex() (*ReindexState, *http.Response, error)
+	ReindexStatus() (*ReindexState, *http.Response, error)
+}
+
 // TransitionStateInfo represents the server state response after a server operation is preformed.
 type TransitionStateInfo struct {
 	ServerInfo
@@ -108,8 +116,7 @@ func (s *ServerService) PrepareForRestart() (*TransitionStateInfo, *http.Respons
 
 // Reindex will start a server reindex
 func (s *ServerService) Reindex() (*ReindexState, *http.Response, error) {
-	u := "reindex"
-	request, err := s.client.NewRequest(http.MethodPost, u, nil)
+	request, err := s.client.NewRequest(http.MethodPost, "reindex", nil)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -120,7 +127,7 @@ func (s *ServerService) Reindex() (*ReindexState, *http.Response, error) {
 		return nil, response, err
 	}
 
-	if !(response.StatusCode == 202) {
+	if response.StatusCode != http.StatusAccepted {
 		return nil, response, &simpleError{fmt.Sprintf("Server reindex returned %d", response.StatusCode)}
 	}
 
@@ -129,8 +136,7 @@ func (s *ServerService) Reindex() (*ReindexState, *http.Response, error) {
 
 // ReindexStatus will start a server reindex
 func (s *ServerService) ReindexStatus() (*ReindexState, *http.Response, error) {
-	u := "reindex"
-	request, err := s.client.NewRequest(http.MethodGet, u, nil)
+	request, err := s.client.NewRequest(http.MethodGet, "reindex", nil)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -141,7 +147,7 @@ func (s *ServerService) ReindexStatus() (*ReindexState, *http.Response, error) {
 		return nil, response, err
 	}
 
-	if !(response.StatusCode == 200) {
+	if response.StatusCode != http.StatusOK {
 		return nil, response, &simpleError{fmt.Sprintf("Request for reindex status returned %d", response.StatusCode)}
 	}
 

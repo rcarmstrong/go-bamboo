@@ -9,6 +9,12 @@ import (
 // ProjectService handles communication with the project related methods
 type ProjectService service
 
+type IProjectService interface {
+	ProjectInfo(projectKey string) (*ProjectInformation, *http.Response, error)
+	ProjectPlans(projectKey string) ([]*Plan, *http.Response, error)
+	ListProjects() ([]*Project, *http.Response, error)
+}
+
 // ProjectResponse the REST response from the server
 type ProjectResponse struct {
 	*ResourceMetadata
@@ -76,7 +82,7 @@ func (p *ProjectService) ProjectPlans(projectKey string) ([]*Plan, *http.Respons
 	if !emptyStrings(projectKey) {
 		u = fmt.Sprintf("project/%s.json", projectKey)
 	} else {
-		return nil, nil, &simpleError{fmt.Sprintf("Project key cannot be an empty string")}
+		return nil, nil, &simpleError{"Project key cannot be an empty string"}
 	}
 
 	request, err := p.client.NewRequest(http.MethodGet, u, nil)

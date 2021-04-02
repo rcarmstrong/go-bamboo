@@ -1,13 +1,12 @@
-package bamboo_test
+package test
 
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/lotos2512/bamboo"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
-	bamboo "github.com/rcarmstrong/go-bamboo"
 )
 
 func TestClonePlan(t *testing.T) {

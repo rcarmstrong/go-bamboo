@@ -9,6 +9,12 @@ import (
 // interacting with plan branches
 type PlanBranchService service
 
+type IPlanBranchService interface {
+	ListPlanBranches(planKey string) ([]*Branch, *http.Response, error)
+	ListVCSBranches(planKey string) ([]string, *http.Response, error)
+	BranchInfo(planKey, branchName string) (*Branch, *http.Response, error)
+}
+
 // BranchesResponse encapsulates the information from
 // requesting plan branch information
 type BranchesResponse struct {

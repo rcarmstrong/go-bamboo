@@ -8,6 +8,11 @@ import (
 // InfoService retrieves server information
 type InfoService service
 
+type IInfoService interface {
+	BuildInfo() (*BuildInfo, *http.Response, error)
+	ServerInfo() (*ServerInfo, *http.Response, error)
+}
+
 // BuildInfo represents the build information of the Bamboo server
 type BuildInfo struct {
 	Version     string `json:"version,omitempty"`

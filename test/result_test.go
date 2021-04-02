@@ -1,12 +1,11 @@
-package bamboo_test
+package test
 
 import (
+	"github.com/lotos2512/bamboo"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
-
-	bamboo "github.com/rcarmstrong/go-bamboo"
 )
 
 func TestLatestResult(t *testing.T) {

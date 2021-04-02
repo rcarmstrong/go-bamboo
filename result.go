@@ -8,6 +8,12 @@ import (
 // ResultService handles communication with build results
 type ResultService service
 
+type IResultService interface {
+	LatestResult(key string) (*Result, *http.Response, error)
+	NumberedResult(key string) (*Result, *http.Response, error)
+	ListResults(key string) ([]*Result, *http.Response, error)
+}
+
 // ResultsResponse encapsulates the information from
 // requesting result information
 type ResultsResponse struct {

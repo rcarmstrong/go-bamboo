@@ -8,6 +8,10 @@ import (
 // CommentService handles communication with the comments on a plan result
 type CommentService service
 
+type ICommentService interface {
+	AddComment(comment *Comment) (bool, *http.Response, error)
+}
+
 // Comment is a single comment on a result
 type Comment struct {
 	Content   string `json:"content"`

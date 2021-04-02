@@ -8,6 +8,10 @@ import (
 // LabelService handles communication with the labels on a plan result
 type LabelService service
 
+type ILabelService interface {
+	AddLabel(label *Label) (bool, *http.Response, error)
+}
+
 // Label is a single label on a result
 type Label struct {
 	Name      string `json:"name"`
