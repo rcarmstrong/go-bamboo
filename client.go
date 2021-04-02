@@ -161,7 +161,7 @@ func (c *Client) Do(req *http.Request, v interface{}) (*http.Response, error) {
 		return nil, err
 	}
 
-	successes := resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusCreated
+	successes := resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusCreated || resp.StatusCode == http.StatusAccepted
 
 	defer func() {
 		if successes {

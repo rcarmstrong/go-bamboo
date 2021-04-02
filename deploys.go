@@ -11,6 +11,7 @@ type DeployService service
 type IDeployService interface {
 	CreateDeployVersion(deploymentProjectID int, planResultKey, versionName, nextVersionName string) (*DeployVersionResult, error)
 	CreateDeploymentProject(deploymentProjectRequest CreateDeploymentProjectRequest) (dp DeploymentProject, err error)
+	DeleteDeploymentProject(id uint) (result bool, err error)
 	UpdateDeploymentProject(projectID uint, deploymentProjectRequest UpdateDeploymentProjectRequest) (dp DeploymentProject, err error)
 	ListDeploys() (DeploysResponse, error)
 	DeployEnvironments(id int) (*DeployEnvironment, error)
@@ -159,6 +160,24 @@ func (d *DeployService) CreateDeployVersion(deploymentProjectID int, planResultK
 	}
 
 	return result, nil
+}
+
+func (d *DeployService) DeleteDeploymentProject(id uint) (result bool, err error) {
+	request, err := d.client.NewRequest(http.MethodDelete, fmt.Sprintf("deploy/project/%d", id), nil)
+	if err != nil {
+		return
+	}
+
+	response, err := d.client.Do(request, nil)
+	if err != nil {
+		return
+	}
+
+	if response.StatusCode != http.StatusNoContent {
+		return result, newRespErr(response, "Error delete deployment project")
+	}
+
+	return true, err
 }
 
 func (d *DeployService) CreateDeploymentProject(deploymentProjectRequest CreateDeploymentProjectRequest) (dp DeploymentProject, err error) {
