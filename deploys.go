@@ -14,6 +14,7 @@ type IDeployService interface {
 	DeleteDeploymentProject(id uint) (result bool, err error)
 	UpdateDeploymentProject(projectID uint, deploymentProjectRequest UpdateDeploymentProjectRequest) (dp DeploymentProject, err error)
 	ListDeploys() (DeploysResponse, error)
+	ListDeploysForPlan(planKey string) (DeploysResponse, error)
 	DeployEnvironments(id int) (*DeployEnvironment, error)
 	DeployEnvironmentResults(id int) (*DeployEnvironmentResults, error)
 	QueueDeploy(environmentID, versionID int) (*QueueDeployRequest, error)
@@ -255,6 +256,25 @@ func (d *DeployService) DeleteRepository(projectID, repoID uint) (r Repository, 
 // ListDeploys lists all deployments
 func (d *DeployService) ListDeploys() (DeploysResponse, error) {
 	request, err := d.client.NewRequest(http.MethodGet, "deploy/project/all", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	deployResp := DeploysResponse{}
+	response, err := d.client.Do(request, &deployResp)
+	if err != nil {
+		return nil, err
+	}
+
+	if response.StatusCode != http.StatusOK {
+		return nil, newRespErr(response, "Error listing deploys")
+	}
+
+	return deployResp, nil
+}
+
+func (d *DeployService) ListDeploysForPlan(planKey string) (DeploysResponse, error) {
+	request, err := d.client.NewRequest(http.MethodGet, fmt.Sprintf("deploy/project/forPlan?planKey=%s", planKey), nil)
 	if err != nil {
 		return nil, err
 	}
