@@ -34,9 +34,9 @@ const (
 
 // Client manages the communication with the Bamboo API
 type Client struct {
-	client      *http.Client // HTTP client used to communicate with the API
-	BaseURL     *url.URL
-	SimpleCreds *SimpleCredentials // User credentials
+	client     *http.Client // HTTP client used to communicate with the API
+	BaseURL    *url.URL
+	authorizer Authorizer // User credentials
 
 	common service // Reuse a single struct instead of allocating one for each service on the heap.
 
@@ -81,6 +81,23 @@ func (c *Client) SetURL(desiredURL string) error {
 // provided, http.DefaultClient will be used. To use API methods which require
 // authentication, provide an admin username/password
 func NewSimpleClient(httpClient *http.Client, username, password string) *Client {
+	creds := &SimpleCredentials{Username: username, Password: password}
+	return NewClient(httpClient, creds)
+}
+
+// NewSimpleClient returns a new Bamboo API client. If a nil httpClient is
+// provided, http.DefaultClient will be used. To use API methods which require
+// authentication, provide an admin username/password
+func NewTokenClient(httpClient *http.Client, token string) *Client {
+	creds := &TokenCredentials{
+		Token: token,
+	}
+	return NewClient(httpClient, creds)
+}
+
+// NewClient returns a new Bamboo API client. If a nil httpClient is
+// provided, http.DefaultClient will be used.
+func NewClient(httpClient *http.Client, creds Authorizer) *Client {
 	if httpClient == nil {
 		httpClient = &http.Client{
 			Timeout: time.Second * 10,
@@ -88,7 +105,11 @@ func NewSimpleClient(httpClient *http.Client, username, password string) *Client
 	}
 	baseURL, _ := url.Parse(defaultBaseURL)
 
-	c := &Client{client: httpClient, BaseURL: baseURL, SimpleCreds: &SimpleCredentials{Username: username, Password: password}}
+	c := &Client{
+		client:     httpClient,
+		BaseURL:    baseURL,
+		authorizer: creds,
+	}
 	c.common.client = c
 	c.Plans = (*PlanService)(&c.common)
 	c.Deploys = (*DeployService)(&c.common)
@@ -134,8 +155,8 @@ func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Requ
 		return nil, err
 	}
 
-	creds := c.SimpleCreds
-	req.SetBasicAuth(creds.Username, creds.Password)
+	creds := c.authorizer
+	req.Header.Set("Authorization", creds.Authorization())
 	req.Header.Set("Accept", "application/json")
 
 	if body != nil {
