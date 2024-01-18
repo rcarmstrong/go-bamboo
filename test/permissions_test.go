@@ -1,13 +1,13 @@
-package bamboo_test
+package test
 
-import bamboo "github.com/rcarmstrong/go-bamboo"
+import "github.com/lotos2512/bamboo"
 
 var (
 	permissionsTestCases = []bamboo.PermissionsOpts{
 		bamboo.PermissionsOpts{
 			Resource: bamboo.GlobalResource,
 		},
-		bamboo.PermissionsOpts{
+		{
 			Resource: bamboo.PlanResource,
 			Key:      "TEST",
 		},
@@ -27,7 +27,7 @@ var (
 			Resource: bamboo.ProjectPlanResource,
 			Key:      "TEST",
 		},
-		bamboo.PermissionsOpts{
+		{
 			Resource: bamboo.DeploymentResource,
 			Key:      "TEST",
 		},
@@ -35,9 +35,9 @@ var (
 
 	allowedPlanAccessLevels = [][]string{
 		// Allowed to view a plan
-		[]string{bamboo.ReadPermission},
+		{bamboo.ReadPermission},
 		// Allowed to view and edit a plan. Cannot manually start builds.
-		[]string{bamboo.ReadPermission, bamboo.WritePermission},
+		{bamboo.ReadPermission, bamboo.WritePermission},
 		// Allowed to view and manually build a plan. Cannot edit the plan.
 		[]string{bamboo.ReadPermission, bamboo.BuildPermission},
 		// Allowed to view the plan and clone the plan for a new plan. Cannot edit or manually build the plan.

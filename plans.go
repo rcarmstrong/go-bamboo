@@ -9,6 +9,17 @@ import (
 // PlanService handles communication with the plan related methods
 type PlanService service
 
+type IPlanService interface {
+	CreatePlanBranch(planKey, branchName string, options *PlanCreateBranchOptions) (result bool, err error)
+	NumberOfPlans() (number int, err error)
+	ListPlans() (plans []*Plan, err error)
+	ListPlanKeys() (keys []string, err error)
+	ListPlanNames() (names []string, err error)
+	PlanNameMap() (map[string]string, error)
+	DisablePlan(planKey string) (err error)
+	DeletePlan(planKey string) (err error)
+}
+
 // PlanCreateBranchOptions specifies the optional parameters
 // for the CreatePlanBranch method
 type PlanCreateBranchOptions struct {
@@ -45,17 +56,17 @@ type PlanKey struct {
 }
 
 // CreatePlanBranch will create a plan branch with the given branch name for the specified build
-func (p *PlanService) CreatePlanBranch(planKey, branchName string, options *PlanCreateBranchOptions) (bool, *http.Response, error) {
+func (p *PlanService) CreatePlanBranch(planKey, branchName string, options *PlanCreateBranchOptions) (result bool, err error) {
 	var u string
 	if !emptyStrings(planKey, branchName) {
 		u = fmt.Sprintf("plan/%s/branch/%s.json", planKey, branchName)
 	} else {
-		return false, nil, &simpleError{"Project key and/or branch name cannot be empty"}
+		return false, &simpleError{"Project key and/or branch name cannot be empty"}
 	}
 
 	request, err := p.client.NewRequest(http.MethodPut, u, nil)
 	if err != nil {
-		return false, nil, err
+		return
 	}
 
 	if options != nil && options.VCSBranch != "" {
@@ -66,21 +77,21 @@ func (p *PlanService) CreatePlanBranch(planKey, branchName string, options *Plan
 
 	response, err := p.client.Do(request, nil)
 	if err != nil {
-		return false, response, err
+		return
 	}
 
 	if !(response.StatusCode == 200) {
-		return false, response, &simpleError{fmt.Sprintf("Create returned %d", response.StatusCode)}
+		return false, &simpleError{fmt.Sprintf("Create returned %d", response.StatusCode)}
 	}
 
-	return true, response, nil
+	return true, nil
 }
 
 // NumberOfPlans returns the number of plans on the Bamboo server
-func (p *PlanService) NumberOfPlans() (int, *http.Response, error) {
+func (p *PlanService) NumberOfPlans() (number int, err error) {
 	request, err := p.client.NewRequest(http.MethodGet, "plan.json", nil)
 	if err != nil {
-		return 0, nil, err
+		return
 	}
 
 	// Restrict results to one for speed
@@ -91,27 +102,27 @@ func (p *PlanService) NumberOfPlans() (int, *http.Response, error) {
 	planResp := PlanResponse{}
 	response, err := p.client.Do(request, &planResp)
 	if err != nil {
-		return 0, response, err
+		return
 	}
 
 	if response.StatusCode != 200 {
-		return 0, response, &simpleError{fmt.Sprintf("Getting the number of plans returned %s", response.Status)}
+		return 0, &simpleError{fmt.Sprintf("Getting the number of plans returned %s", response.Status)}
 	}
 
-	return planResp.Plans.Size, response, nil
+	return planResp.Plans.Size, err
 }
 
 // ListPlans gets information on all plans
-func (p *PlanService) ListPlans() ([]*Plan, *http.Response, error) {
+func (p *PlanService) ListPlans() (plans []*Plan, err error) {
 	// Get number of plans to set max-results
-	numPlans, resp, err := p.NumberOfPlans()
+	numPlans, err := p.NumberOfPlans()
 	if err != nil {
-		return nil, resp, err
+		return
 	}
 
 	request, err := p.client.NewRequest(http.MethodGet, "plan.json", nil)
 	if err != nil {
-		return nil, nil, err
+		return
 	}
 
 	q := request.URL.Query()
@@ -121,49 +132,48 @@ func (p *PlanService) ListPlans() ([]*Plan, *http.Response, error) {
 	planResp := PlanResponse{}
 	response, err := p.client.Do(request, &planResp)
 	if err != nil {
-		return nil, response, err
+		return
 	}
 
 	if response.StatusCode != 200 {
-		return nil, response, &simpleError{fmt.Sprintf("Getting plan information returned %s", response.Status)}
+		return nil, &simpleError{fmt.Sprintf("Getting plan information returned %s", response.Status)}
 	}
 
-	return planResp.Plans.PlanList, response, nil
+	return planResp.Plans.PlanList, nil
 }
 
 // ListPlanKeys get all the plan keys for all build plans on Bamboo
-func (p *PlanService) ListPlanKeys() ([]string, *http.Response, error) {
-	plans, response, err := p.ListPlans()
+func (p *PlanService) ListPlanKeys() (keys []string, err error) {
+	plans, err := p.ListPlans()
 	if err != nil {
-		return nil, response, err
+		return nil, err
 	}
-	keys := make([]string, len(plans))
-
+	keys = make([]string, len(plans))
 	for i, p := range plans {
 		keys[i] = p.Key
 	}
-	return keys, response, nil
+	return keys, nil
 }
 
 // ListPlanNames returns a list of ShortNames of all plans
-func (p *PlanService) ListPlanNames() ([]string, *http.Response, error) {
-	plans, response, err := p.ListPlans()
+func (p *PlanService) ListPlanNames() (names []string, err error) {
+	plans, err := p.ListPlans()
 	if err != nil {
-		return nil, response, err
+		return nil, err
 	}
-	names := make([]string, len(plans))
+	names = make([]string, len(plans))
 
 	for i, p := range plans {
 		names[i] = p.ShortName
 	}
-	return names, response, nil
+	return names, nil
 }
 
 // PlanNameMap returns a map[string]string where the PlanKey is the key and the ShortName is the value
-func (p *PlanService) PlanNameMap() (map[string]string, *http.Response, error) {
-	plans, response, err := p.ListPlans()
+func (p *PlanService) PlanNameMap() (map[string]string, error) {
+	plans, err := p.ListPlans()
 	if err != nil {
-		return nil, response, err
+		return nil, err
 	}
 
 	planMap := make(map[string]string, len(plans))
@@ -171,20 +181,44 @@ func (p *PlanService) PlanNameMap() (map[string]string, *http.Response, error) {
 	for _, p := range plans {
 		planMap[p.Key] = p.ShortName
 	}
-	return planMap, response, nil
+	return planMap, nil
 }
 
 // DisablePlan will disable a plan or plan branch
-func (p *PlanService) DisablePlan(planKey string) (*http.Response, error) {
+func (p *PlanService) DisablePlan(planKey string) (err error) {
 	u := fmt.Sprintf("plan/%s/enable", planKey)
 	request, err := p.client.NewRequest(http.MethodDelete, u, nil)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	response, err := p.client.Do(request, nil)
 	if err != nil {
-		return response, err
+		return
 	}
-	return response, nil
+
+	if response.StatusCode != http.StatusOK {
+		return newRespErr(response, "Error disable plan")
+	}
+
+	return
+}
+
+func (p *PlanService) DeletePlan(planKey string) (err error) {
+	u := fmt.Sprintf("plan/%s", planKey)
+	request, err := p.client.NewRequest(http.MethodDelete, u, nil)
+	if err != nil {
+		return err
+	}
+
+	response, err := p.client.Do(request, nil)
+	if err != nil {
+		return
+	}
+
+	if response.StatusCode != http.StatusNoContent {
+		return newRespErr(response, "Error delete plan")
+	}
+
+	return
 }

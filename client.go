@@ -1,7 +1,7 @@
 // package bamboo provides a client to communicate with Atlassian Bamboo CI Server API
 //
 // Usage:
-//  import bamboo "github.com/rcarmstrong/go-bamboo"
+//  import
 //
 // A Bamboo client exposes various services that control access to different parts of
 // the Bamboo API. For example:
@@ -28,30 +28,31 @@ import (
 )
 
 const (
-	libraryVersion = "1.0"
 	defaultBaseURL = "http://localhost:8085/rest/api/latest/"
 )
 
 // Client manages the communication with the Bamboo API
 type Client struct {
-	client      *http.Client // HTTP client used to communicate with the API
-	BaseURL     *url.URL
-	SimpleCreds *SimpleCredentials // User credentials
+	client            *http.Client // HTTP client used to communicate with the API
+	BaseURL           *url.URL
+	SimpleCredentials *SimpleCredentials // User credentials
 
 	common service // Reuse a single struct instead of allocating one for each service on the heap.
 
 	// Services used for talking to different parts of the Bamboo API
-	Info        *InfoService
-	Plans       *PlanService
-	Deploys     *DeployService
-	Branches    *PlanBranchService
-	Projects    *ProjectService
-	Results     *ResultService
-	Comments    *CommentService
-	Labels      *LabelService
-	Clone       *CloneService
-	Server      *ServerService
+	Info        IInfoService
+	Plans       IPlanService
+	Deploys     IDeployService
+	Branches    IPlanBranchService
+	Projects    IProjectService
+	Results     IResultService
+	Comments    ICommentService
+	Labels      ILabelService
+	Clone       ICloneService
+	Server      IServerService
 	Permissions *Permissions
+	Encryption  IEncryption
+	Repository  IRepositoryService
 }
 
 type service struct {
@@ -88,7 +89,7 @@ func NewSimpleClient(httpClient *http.Client, username, password string) *Client
 	}
 	baseURL, _ := url.Parse(defaultBaseURL)
 
-	c := &Client{client: httpClient, BaseURL: baseURL, SimpleCreds: &SimpleCredentials{Username: username, Password: password}}
+	c := &Client{client: httpClient, BaseURL: baseURL, SimpleCredentials: &SimpleCredentials{Username: username, Password: password}}
 	c.common.client = c
 	c.Plans = (*PlanService)(&c.common)
 	c.Deploys = (*DeployService)(&c.common)
@@ -101,6 +102,8 @@ func NewSimpleClient(httpClient *http.Client, username, password string) *Client
 	c.Clone = (*CloneService)(&c.common)
 	c.Server = (*ServerService)(&c.common)
 	c.Permissions = (*Permissions)(&c.common)
+	c.Encryption = (*Encryption)(&c.common)
+	c.Repository = (*RepositoryService)(&c.common)
 	return c
 }
 
@@ -134,9 +137,11 @@ func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Requ
 		return nil, err
 	}
 
-	creds := c.SimpleCreds
+	creds := c.SimpleCredentials
 	req.SetBasicAuth(creds.Username, creds.Password)
-	req.Header.Set("Accept", "application/json")
+
+	req.Header.Set("Accept", "application/json, text/plain, */*")
+	req.Header.Set("Content-Type", "application/json;charset=utf-8")
 
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
@@ -151,21 +156,23 @@ func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Requ
 // first decode it. If rate limit is exceeded and reset time is in the future,
 // Do returns *RateLimitError immediately without making a network API call.
 func (c *Client) Do(req *http.Request, v interface{}) (*http.Response, error) {
-
 	resp, err := c.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
 
-	defer func() {
-		// Drain up to 512 bytes and close the body to let the Transport reuse the connection
-		io.CopyN(ioutil.Discard, resp.Body, 512)
-		resp.Body.Close()
-	}()
+	successes := resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusCreated || resp.StatusCode == http.StatusAccepted
 
-	if v != nil {
+	defer func() {
+		if successes {
+			// Drain up to 512 bytes and close the body to let the Transport reuse the connection
+			_, _ = io.CopyN(ioutil.Discard, resp.Body, 512)
+			_ = resp.Body.Close()
+		}
+	}()
+	if v != nil && successes {
 		if w, ok := v.(io.Writer); ok {
-			io.Copy(w, resp.Body)
+			_, _ = io.Copy(w, resp.Body)
 		} else {
 			err = json.NewDecoder(resp.Body).Decode(v)
 			if err == io.EOF {

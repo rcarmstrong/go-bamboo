@@ -8,6 +8,10 @@ import (
 // CloneService handles the cloning of one Bamboo resource to another.
 type CloneService service
 
+type ICloneService interface {
+	ClonePlan(srcKey, dstKey string) (*Plan, *http.Response, error)
+}
+
 // ClonePlan clones a plan from one project to another given the full project-plan key for
 // the source plan and the destination plan. The destination project does not need to be in
 // the same project as the source plan. Returns a Plan struct of the resulting plan.
