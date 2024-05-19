@@ -206,3 +206,24 @@ func (d *DeployService) DeployStatus(id int) (*DeployStatus, error) {
 
 	return deployStatus, nil
 }
+
+// DeployProjectVersions returns information on available versions for a project
+func (d *DeployService) DeployProjectVersions(id int) (*DeployVersionListResult, error) {
+	request, err := d.client.NewRequest(http.MethodGet, fmt.Sprintf("deploy/project/%d/versions", id), nil)
+    if err != nil {
+        return nil, err
+    }
+
+    deployVersions := &DeployVersionListResult{}
+    response, err := d.client.Do(request, &deployVersions)
+    if err != nil {
+        return nil, err
+    }
+
+    if response.StatusCode != http.StatusOK {
+        return nil, newRespErr(response, "Error getting project versions")
+    }
+
+    return deployVersions, nil
+}
+
